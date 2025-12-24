@@ -1,5 +1,4 @@
-##LecturePulse 🎓
-
+# LecturePulse 🎓
 
 
 LecturePulse is a real-time student feedback application designed to bridge the gap between teachers and students during lectures. It allows teachers to gauge class understanding instantly and enables students to provide anonymous feedback without fear of interruption. 
