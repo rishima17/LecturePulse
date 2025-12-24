@@ -5,7 +5,7 @@ LecturePulse is a real-time student feedback application designed to bridge the 
 
 Live Demo:-https://lecturepulse.vercel.app/
 
-🚀 Features
+ ## 🚀 Features
 
 
 
@@ -20,7 +20,7 @@ Anonymous Participation: Encourages honest feedback from students.
 
 Modern UI: Built with a sleek, glassmorphism-inspired design.
 
-🛠️ Tech Stack
+  ## 🛠️ Tech Stack
 
 
 Frontend Framework: React + Vite
@@ -35,7 +35,7 @@ Icons: Lucide React
 
 Notifications: Sonner
 
-📦 Installation
+ ## 📦 Installation
 
 
 Clone the repository
@@ -52,10 +52,10 @@ Start the development server
 
 npm run dev
 
-🚦 Usage
+  ## 🚦 Usage
 
 
-Teacher Flow:
+  ## Teacher Flow:
 
 Go to `/login` and log in with your credentials.
 
@@ -65,7 +65,7 @@ Share the Session Code with students.
 
 Monitor live feedback and view analytics after the session.
 
-Student Flow:
+ ## Student Flow:
 
 Go to `/student`.
 
@@ -74,7 +74,7 @@ Enter the Session Code provided by the teacher.
 Tap the buttons to provide real-time feedback during the lecture.
 
 
-📂 Project Structure
+ ## 📂 Project Structure
 
 `src/pages`: Application views (Landing, Login, Dashboard, StudentFeedback, Analytics)
 
@@ -85,7 +85,7 @@ Tap the buttons to provide real-time feedback during the lecture.
 `src/utils`: Helper functions (storage, analytics)
 
 
-📜 Scripts
+ ## 📜 Scripts
 
 `npm run dev`: Start the development server
 
