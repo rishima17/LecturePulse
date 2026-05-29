@@ -9,12 +9,14 @@ import {
   GraduationCap,
   Menu,
   X,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import heroBg from "@/assets/hero-bg.png";
-
+import { useTheme } from '../context/ThemeContext';
 const features = [
   {
     icon: Users,
@@ -50,7 +52,7 @@ const stats = [
 
 function Landing() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
+  const { theme, toggleTheme } = useTheme();
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -64,9 +66,91 @@ function Landing() {
               LecturePulse
             </span>
           </Link>
-          
+
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-3">
+            {/* 
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle Theme"
+              className="
+    group relative flex items-center justify-center
+    w-11 h-11 rounded-full
+    border border-border/50
+    bg-background/70
+    backdrop-blur-xl
+    hover:bg-accent
+    transition-all duration-300
+    hover:scale-105
+    active:scale-95
+    shadow-lg shadow-black/5
+  "
+            >
+              <div className="relative">
+                {theme === "dark" ? (
+                  <Sun
+                    className="
+          w-5 h-5 text-yellow-400
+          transition-all duration-500
+          rotate-0 scale-100
+          group-hover:rotate-12
+        "
+                  />
+                ) : (
+                  <Moon
+                    className="
+          w-5 h-5 text-muted-foreground-700
+          dark:text-muted-foreground-200
+          transition-all duration-500
+          rotate-0 scale-100
+          group-hover:-rotate-12
+        "
+                  />
+                )}
+              </div>
+            </button> */}
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle Theme"
+              className={`
+    group relative flex items-center justify-center
+    w-11 h-11 rounded-full
+    border border-border/50
+    backdrop-blur-xl
+    transition-all duration-300
+    hover:scale-105
+    active:scale-95
+    shadow-lg shadow-black/5
+
+    ${theme === "light"
+                  ? "bg-[#00C2C5] text-white hover:bg-[#00aeb1]"
+                  : "bg-[#00C2C5]/20 text-white hover:bg-[#00C2C5]/30 border-[#00C2C5]/30"
+                }
+  `}
+            >
+              <div className="relative">
+                {theme === "dark" ? (
+                  <Sun
+                    className="
+          w-5 h-5 text-white
+          transition-all duration-500
+          rotate-0 scale-100
+          group-hover:rotate-12
+        "
+                  />
+                ) : (
+                  <Moon
+                    className="
+          w-5 h-5 text-white
+          transition-all duration-500
+          rotate-0 scale-100
+          group-hover:-rotate-12
+        "
+                  />
+                )}
+              </div>
+            </button>
+
             <Button variant="ghost" asChild>
               <Link to="/student">Student Feedback</Link>
             </Button>
@@ -76,7 +160,7 @@ function Landing() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
+          <button
             className="md:hidden p-2 text-foreground"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
@@ -94,6 +178,37 @@ function Landing() {
               className="md:hidden border-t border-border bg-background"
             >
               <div className="p-4 flex flex-col gap-4">
+                <button
+                  onClick={toggleTheme}
+                  className="
+    flex items-center gap-3
+    w-full px-4 py-3
+    rounded-xl
+    border border-border/50
+    bg-background/70
+    backdrop-blur-xl
+    hover:bg-accent
+    transition-all duration-300
+  "
+                >
+                  {theme === "dark" ? (
+                    <>
+                      <Sun className="w-5 h-5 text-yellow-400" />
+                      <span className="text-sm font-medium">
+                        Light Mode
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="w-5 h-5 text-muted-foreground-700 dark:text-muted-foreground-200" />
+                      <span className="text-sm font-medium">
+                        {/* <span className="text-sm font-medium text-foreground"> */}
+                        Dark Mode
+                      </span>
+                    </>
+                  )}
+                </button>
+
                 <Button variant="ghost" asChild className="w-full justify-start" onClick={() => setIsMobileMenuOpen(false)}>
                   <Link to="/student">
                     <MessageSquare className="w-4 h-4 mr-2" />
@@ -115,7 +230,7 @@ function Landing() {
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 relative overflow-hidden">
         {/* Background Image */}
-        <div 
+        <div
           className="absolute inset-0 z-0 opacity-20"
           style={{
             backgroundImage: `url(${heroBg})`,
