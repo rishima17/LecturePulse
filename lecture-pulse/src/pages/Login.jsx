@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { GraduationCap, Loader2, User, Lock, BadgeCheck, ArrowRight } from "lucide-react";
+import { GraduationCap, Loader2, User, Lock, BadgeCheck, ArrowRight, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Login() {
@@ -52,6 +52,14 @@ export default function Login() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 bg-background">
+       {/* Back Navigation */}
+       <Link to="/" className="absolute top-4 left-4 z-50 md:top-8 md:left-8">
+          <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+             <Home className="w-4 h-4 mr-2" />
+             Back to Home
+          </Button>
+       </Link>
+
        {/* Animated Background Mesh */}
        <div className="absolute inset-0 z-0">
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '4s' }} />

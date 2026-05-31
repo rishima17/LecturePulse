@@ -85,6 +85,14 @@ export default function Student() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
+       {/* Back Navigation */}
+       <Link to="/" className="absolute top-4 left-4 z-50 md:top-8 md:left-8">
+          <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+             <Home className="w-4 h-4 mr-2" />
+             Back to Home
+          </Button>
+       </Link>
+
       {/* Background Decor */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '4s' }} />
