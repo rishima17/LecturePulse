@@ -75,6 +75,15 @@ export default function Student() {
       return;
     }
     setLoading(true);
+    const submittedSessions = JSON.parse(
+      localStorage.getItem("lecturePulse_submitted") || "[]"
+    );
+
+    if (submittedSessions.includes(activeSession.id)) {
+      toast.error("You have already submitted feedback for this session.");
+      setLoading(false);
+      return;
+    }
 
     const feedback = {
       id: crypto.randomUUID(),
@@ -93,6 +102,13 @@ export default function Student() {
       "lecturePulse_feedback",
       JSON.stringify([...allFeedback, feedback]),
     );
+    localStorage.setItem(
+      "lecturePulse_submitted",
+      JSON.stringify([
+        ...submittedSessions,
+        activeSession.id
+      ])
+    );
 
     setTimeout(() => {
       setStep("success");
@@ -106,11 +122,10 @@ export default function Student() {
       whileTap={{ scale: 0.95 }}
       type="button"
       onClick={() => setUnderstanding(value)}
-      className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all duration-300 ${
-        understanding === value
+      className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all duration-300 ${understanding === value
           ? `border-${color}-500 bg-${color}-500/10 text-${color}-600 shadow-md shadow-${color}-500/10`
           : "border-muted bg-card hover:bg-muted/50 text-muted-foreground"
-      }`}
+        }`}
     >
       <Icon
         className={`w-8 h-8 ${understanding === value ? `text-${color}-500` : ""}`}
@@ -121,13 +136,13 @@ export default function Student() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
-       {/* Back Navigation */}
-       <Link to="/" className="absolute top-4 left-4 z-50 md:top-8 md:left-8">
-          <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
-             <Home className="w-4 h-4 mr-2" />
-             Back to Home
-          </Button>
-       </Link>
+      {/* Back Navigation */}
+      <Link to="/" className="absolute top-4 left-4 z-50 md:top-8 md:left-8">
+        <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+          <Home className="w-4 h-4 mr-2" />
+          Back to Home
+        </Button>
+      </Link>
 
       {/* Background Decor */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -291,11 +306,10 @@ export default function Student() {
                           key={level}
                           type="button"
                           onClick={() => setAttention(level.toLowerCase())}
-                          className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 ${
-                            attention === level.toLowerCase()
+                          className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 ${attention === level.toLowerCase()
                               ? "bg-white text-primary shadow-sm scale-105"
                               : "text-muted-foreground hover:bg-white/50"
-                          }`}
+                            }`}
                         >
                           {level}
                         </button>
@@ -322,11 +336,10 @@ export default function Student() {
                                 : time.toLowerCase(),
                             )
                           }
-                          className={`flex-1 border-input hover:bg-accent hover:text-accent-foreground transition-all ${
-                            confusionTime === time.toLowerCase()
+                          className={`flex-1 border-input hover:bg-accent hover:text-accent-foreground transition-all ${confusionTime === time.toLowerCase()
                               ? "border-primary bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
                               : ""
-                          }`}
+                            }`}
                         >
                           {time}
                         </Button>
