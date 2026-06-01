@@ -10,27 +10,68 @@ const CreateLectureDialog = ({ open, onOpenChange, teacherId, onCreated }) => {
   const [formData, setFormData] = useState({
     subject: "",
     topic: "",
-    duration: "60"
+    duration: "60",
   });
 
   if (!open) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!formData.subject.trim()) {
+      toast.error("Subject is required");
+      return;
+    }
+
+    if (formData.subject.trim().length < 3) {
+      toast.error("Subject must be at least 3 characters");
+      return;
+    }
+
+    if (!formData.topic.trim()) {
+      toast.error("Topic is required");
+      return;
+    }
+
+    if (formData.topic.trim().length < 3) {
+      toast.error("Topic must be at least 3 characters");
+      return;
+    }
+
+    if (!formData.duration) {
+      toast.error("Duration is required");
+      return;
+    }
+
+    const duration = Number(formData.duration);
+
+    if (isNaN(duration)) {
+      toast.error("Duration must be a number");
+      return;
+    }
+
+    if (duration < 1) {
+      toast.error("Duration must be at least 1 minute");
+      return;
+    }
+
+    // if (duration > 300) {
+    //   toast.error("Duration cannot exceed 300 minutes");
+    //   return;
+    // }
     try {
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
-        createLecture({
-            teacherId,
-            code,
-            subject: formData.subject,
-            topic: formData.topic,
-            duration: parseInt(formData.duration)
-        });
-        toast.success("Lecture created successfully");
-        setFormData({ subject: "", topic: "", duration: "60" });
-        onCreated();
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      createLecture({
+        teacherId,
+        code,
+        subject: formData.subject,
+        topic: formData.topic,
+        duration: parseInt(formData.duration),
+      });
+      toast.success("Lecture created successfully");
+      setFormData({ subject: "", topic: "", duration: "60" });
+      onCreated();
     } catch (error) {
-        toast.error("Failed to create lecture");
+      toast.error("Failed to create lecture");
     }
   };
 
@@ -39,48 +80,63 @@ const CreateLectureDialog = ({ open, onOpenChange, teacherId, onCreated }) => {
       <div className="bg-card w-full max-w-md rounded-xl shadow-xl border border-border animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-xl font-semibold">Create New Lecture</h2>
-          <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="h-8 w-8">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onOpenChange(false)}
+            className="h-8 w-8"
+          >
             <X className="w-4 h-4" />
           </Button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="subject">Subject</Label>
-            <Input 
+            <Input
               id="subject"
               placeholder="e.g. Physics"
               value={formData.subject}
-              onChange={e => setFormData({...formData, subject: e.target.value})}
-              required
+              onChange={(e) =>
+                setFormData({ ...formData, subject: e.target.value })
+              }
+              // required
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="topic">Topic</Label>
-            <Input 
+            <Input
               id="topic"
               placeholder="e.g. Newton's Laws"
               value={formData.topic}
-              onChange={e => setFormData({...formData, topic: e.target.value})}
-              required
+              onChange={(e) =>
+                setFormData({ ...formData, topic: e.target.value })
+              }
+              // required
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="duration">Duration (minutes)</Label>
-            <Input 
+            <Input
               id="duration"
               type="number"
-              min="1"
+              // min="1"
               value={formData.duration}
-              onChange={e => setFormData({...formData, duration: e.target.value})}
-              required
+              onChange={(e) =>
+                setFormData({ ...formData, duration: e.target.value })
+              }
+              // required
             />
           </div>
 
           <div className="pt-4 flex gap-2 justify-end">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" variant="default">
