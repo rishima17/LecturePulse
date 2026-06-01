@@ -273,7 +273,7 @@ Thanks to all the amazing people who contribute to **LecturePulse** 🚀
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 ---
 
