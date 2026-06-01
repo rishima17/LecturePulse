@@ -10,7 +10,7 @@ const AttentionChart = ({ data }) => {
   return (
     <div className="h-[200px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart layout="vertical" data={data} margin={{ left: 10, right: 10 }}>
+        <BarChart layout="vertical" data={data} margin={{ left: 10, right: 10 }} isAnimationActive={false}>
           <XAxis type="number" hide />
           <YAxis 
             dataKey="name" 

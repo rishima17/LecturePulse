@@ -9,12 +9,14 @@ import {
   GraduationCap,
   Menu,
   X,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import heroBg from "@/assets/hero-bg.png";
-
+import { useTheme } from '../context/ThemeContext';
 const features = [
   {
     icon: Users,
@@ -50,7 +52,7 @@ const stats = [
 
 function Landing() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
+  const { theme, toggleTheme } = useTheme();
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -64,9 +66,51 @@ function Landing() {
               LecturePulse
             </span>
           </Link>
-          
+
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle Theme"
+              className={`
+    group relative flex items-center justify-center
+    w-11 h-11 rounded-full
+    border border-border/50
+    backdrop-blur-xl
+    transition-all duration-300
+    hover:scale-105
+    active:scale-95
+    shadow-lg shadow-black/5
+
+    ${theme === "light"
+                  ? "bg-[#00C2C5] text-white hover:bg-[#00aeb1]"
+                  : "bg-[#00C2C5]/20 text-white hover:bg-[#00C2C5]/30 border-[#00C2C5]/30"
+                }
+  `}
+            >
+              <div className="relative z-10 text-white">
+                {theme === "dark" ? (
+                  <Sun
+                    className="
+          w-5 h-5 text-white
+          transition-all duration-500
+          rotate-0 scale-100
+          group-hover:rotate-12
+        "
+                  />
+                ) : (
+                  <Moon
+                    className="
+          w-5 h-5 text-white
+          transition-all duration-500
+          rotate-0 scale-100
+          group-hover:-rotate-12
+        "
+                  />
+                )}
+              </div>
+            </button>
+
             <Button variant="ghost" asChild>
               <Link to="/student">Student Feedback</Link>
             </Button>
@@ -76,7 +120,7 @@ function Landing() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
+          <button
             className="md:hidden p-2 text-foreground"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
@@ -94,6 +138,36 @@ function Landing() {
               className="md:hidden border-t border-border bg-background"
             >
               <div className="p-4 flex flex-col gap-4">
+                <button
+                  onClick={toggleTheme}
+                  className="
+    flex items-center gap-3
+    w-full px-4 py-3
+    rounded-xl
+    border border-border/50
+    bg-background/70
+    backdrop-blur-xl
+    hover:bg-accent
+    transition-all duration-300
+  "
+                >
+                  {theme === "dark" ? (
+                    <>
+                      <Sun className="w-5 h-5 text-yellow-400" />
+                      <span className="text-sm font-medium">
+                        Light Mode
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="w-5 h-5 text-muted-foreground-700 dark:text-muted-foreground-200" />
+                      <span className="text-sm font-medium">
+                        Dark Mode
+                      </span>
+                    </>
+                  )}
+                </button>
+
                 <Button variant="ghost" asChild className="w-full justify-start" onClick={() => setIsMobileMenuOpen(false)}>
                   <Link to="/student">
                     <MessageSquare className="w-4 h-4 mr-2" />
@@ -115,7 +189,7 @@ function Landing() {
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 relative overflow-hidden">
         {/* Background Image */}
-        <div 
+        <div
           className="absolute inset-0 z-0 opacity-20"
           style={{
             backgroundImage: `url(${heroBg})`,
@@ -123,7 +197,13 @@ function Landing() {
             backgroundPosition: 'center',
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 z-0" />
+        <div
+          className="
+    absolute inset-0 z-0
+    bg-background/40
+    dark:bg-background/70
+  "
+        />
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl z-0" />
         <div className="absolute bottom-10 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl z-0" />
 
@@ -188,7 +268,7 @@ function Landing() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="py-20 px-4 bg-background">
         <div className="container mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -223,7 +303,7 @@ function Landing() {
                     <h3 className="text-xl font-bold text-foreground mb-2">
                       {feature.title}
                     </h3>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground leading-relaxed">
                       {feature.description}
                     </p>
                   </CardContent>
@@ -248,13 +328,14 @@ function Landing() {
               className="bg-cover bg-center text-primary-foreground p-12 text-center relative overflow-hidden"
               style={{ backgroundImage: "url('https://img.freepik.com/premium-photo/photo-elementary-school-students-teaching-learning-activities_889227-69551.jpg')" }}
             >
-              <div className="absolute inset-0 bg-slate-900/80" />
+              
+              <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/75 to-black/85" />
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
               <div className="relative">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
                   Ready to Transform Your Teaching?
                 </h2>
-                <p className="text-lg opacity-90 mb-8 max-w-xl mx-auto">
+                <p className="text-lg text-white/90 mb-8 max-w-xl mx-auto">
                   Join educators who are already using data-driven insights to
                   improve student engagement and understanding.
                 </p>

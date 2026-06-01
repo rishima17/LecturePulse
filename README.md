@@ -245,11 +245,35 @@ We love contributions! Whether you're participating through **Social Summer of C
 
 ---
 
+### 💖 Contributors
 
+Thanks to all the amazing people who contribute to **LecturePulse** 🚀
+
+<p align="center">
+  <a href="https://github.com/rishima17/LecturePulse/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=rishima17/LecturePulse" alt="Contributors"/>
+  </a>
+</p>
+
+---
+
+### ⭐ Project Support
+
+<p align="center">
+  <a href="https://github.com/rishima17/LecturePulse/stargazers">
+    <img src="https://img.shields.io/github/stars/rishima17/LecturePulse?style=social" alt="Stars">
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://github.com/rishima17/LecturePulse/network/members">
+    <img src="https://img.shields.io/github/forks/rishima17/LecturePulse?style=social" alt="Forks">
+  </a>
+</p>
+
+---
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 ---
 

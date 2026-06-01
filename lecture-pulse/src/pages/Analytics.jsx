@@ -8,12 +8,30 @@ import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw } from 
 import UnderstandingChart from '@/components/charts/UnderstandingChart';
 import AttentionChart from '@/components/charts/AttentionChart';
 import ConfusionChart from '@/components/charts/ConfusionChart';
+import { generateLecturePDF } from "@/utils/pdfReport";
+import { useRef } from "react";
+import html2canvas from "html2canvas";
 
 const Analytics = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const [lecture, setLecture] = useState(null);
   const [analytics, setAnalytics] = useState(null);
+  const understandingRef = useRef(null);
+  const attentionRef = useRef(null);
+  const confusionRef = useRef(null);
+
+  const captureChart = async (ref) => {
+    if (!ref.current) return null;
+
+    const canvas = await html2canvas(ref.current, {
+      scale: 2,
+      backgroundColor: '#ffffff',
+      useCORS: true,
+    });
+
+    return canvas.toDataURL('image/png');
+  };
 
   const loadData = useCallback(async () => {
     if (!sessionId) return;
@@ -26,13 +44,12 @@ const Analytics = () => {
       navigate('/login');
       return;
     }
-
+    
     const foundLecture = getLectureById(sessionId);
     if (!foundLecture || foundLecture.teacherId !== teacher.id) {
       navigate('/dashboard');
       return;
     }
-
     setLecture(foundLecture);
     // Mock feedback data generation if empty, for demonstration purposes in dev
     let feedback = getFeedbackByLecture(sessionId);
@@ -67,7 +84,27 @@ const Analytics = () => {
 
   const effectiveness = getOverallEffectiveness(analytics);
   const effectivenessInfo = getEffectivenessLabel(effectiveness);
+  const handleDownloadPDF = async () => {
+    const teacher = getCurrentTeacher();
 
+    const understandingChart = await captureChart(understandingRef);
+    const attentionChart = await captureChart(attentionRef);
+    const confusionChart = await captureChart(confusionRef);
+
+    generateLecturePDF({
+      lecture,
+      analytics: {
+        ...analytics,
+        effectiveness,
+      },
+      teacher,
+      charts: {
+        understandingChart,
+        attentionChart,
+        confusionChart,
+      },
+    });
+  };
   return (
     <div className="min-h-screen bg-background pb-12">
       {/* Header */}
@@ -82,17 +119,22 @@ const Analytics = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Button>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-xl font-bold text-foreground">{lecture.topic}</h1>
               <p className="text-sm text-muted-foreground">
                 {lecture.subject} • {lecture.duration} minutes
               </p>
             </div>
-            <Button variant="outline" size="sm" onClick={loadData}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={loadData}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
+                Download PDF Report
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -162,7 +204,9 @@ const Analytics = () => {
                   <CardTitle className="text-base">Understanding Distribution</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <UnderstandingChart data={analytics.understandingDistribution} />
+                  <div ref={understandingRef}>
+                    <UnderstandingChart data={analytics.understandingDistribution} />
+                  </div>
                 </CardContent>
               </Card>
               <Card>
@@ -170,7 +214,9 @@ const Analytics = () => {
                   <CardTitle className="text-base">Attention Levels</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <AttentionChart data={analytics.attentionDistribution} />
+                  <div ref={attentionRef}>
+                    <AttentionChart data={analytics.attentionDistribution} />
+                  </div>
                 </CardContent>
               </Card>
               <Card>
@@ -178,7 +224,9 @@ const Analytics = () => {
                   <CardTitle className="text-base">Confusion Points</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ConfusionChart data={analytics.confusionPointDistribution} />
+                  <div ref={confusionRef}>
+                    <ConfusionChart data={analytics.confusionPointDistribution} />
+                  </div>
                 </CardContent>
               </Card>
             </div>

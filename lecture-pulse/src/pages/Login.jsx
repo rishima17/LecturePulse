@@ -4,20 +4,8 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
-import {
-  GraduationCap,
-  Loader2,
-  User,
-  Lock,
-  BadgeCheck,
-  ArrowRight,
-} from "lucide-react";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { GraduationCap, Loader2, User, Lock, BadgeCheck, ArrowRight, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Login() {
@@ -80,112 +68,31 @@ export default function Login() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 bg-background">
-      {/* Animated Background Mesh */}
-      <div className="absolute inset-0 z-0">
-        <div
-          className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[100px] animate-pulse"
-          style={{ animationDuration: "4s" }}
-        />
-        <div
-          className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[100px] animate-pulse"
-          style={{ animationDuration: "6s", animationDelay: "1s" }}
-        />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[120px]" />
-      </div>
+       {/* Back Navigation */}
+       <Link to="/" className="absolute top-4 left-4 z-50 md:top-8 md:left-8">
+          <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+             <Home className="w-4 h-4 mr-2" />
+             Back to Home
+          </Button>
+       </Link>
 
-      <div className="w-full max-w-md z-10">
-        {/* Brand Header */}
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="flex flex-col items-center mb-8"
-        >
-          <Link to="/" className="flex items-center gap-3 mb-4 group">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/25 group-hover:scale-105 transition-transform duration-300">
-              <GraduationCap className="w-7 h-7 text-white" />
-            </div>
-            <span className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 tracking-tight">
-              LecturePulse
-            </span>
-          </Link>
-          <p className="text-muted-foreground text-center max-w-xs">
-            {isLogin
-              ? "Welcome back, Professor. Your classroom analytics await."
-              : "Join thousands of educators enhancing student engagement."}
-          </p>
-        </motion.div>
+       {/* Animated Background Mesh */}
+       <div className="absolute inset-0 z-0">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '4s' }} />
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[120px]" />
+       </div>
 
-        <Card className="border-border/50 shadow-2xl backdrop-blur-xl bg-card/60 overflow-hidden relative">
-          {/* Top accent line */}
-          <div
-            className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-blue-500 to-purple-500 transition-opacity duration-500 ${loading ? "opacity-100" : "opacity-0"}`}
-          />
-
-          <CardHeader className="space-y-1 pb-2">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold tracking-tight">
-                {isLogin ? "Sign In" : "Create Account"}
-              </h2>
-              {/* Mode Toggle */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setError("");
-                  setFormData({ name: "", teacherId: "", password: "" });
-                }}
-                className="text-xs text-muted-foreground hover:text-primary"
-              >
-                {isLogin ? "Need an account?" : "Have an account?"}
-              </Button>
-            </div>
-          </CardHeader>
-
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-              <AnimatePresence mode="popLayout">
-                {!isLogin && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="space-y-2 mb-4">
-                      <Label htmlFor="name">Full Name</Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          id="name"
-                          placeholder="Prof. John Doe"
-                          className="pl-9 bg-background/50"
-                          value={formData.name}
-                          onChange={(e) =>
-                            setFormData({ ...formData, name: e.target.value })
-                          }
-                          // required={!isLogin}
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <div className="space-y-2">
-                <Label htmlFor="teacherId">Teacher ID</Label>
-                <div className="relative">
-                  <BadgeCheck className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="teacherId"
-                    placeholder="e.g. T-1024"
-                    className="pl-9 bg-background/50"
-                    value={formData.teacherId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, teacherId: e.target.value })
-                    }
-                    // required
-                  />
+       <div className="w-full max-w-md z-10">
+         {/* Brand Header */}
+         <motion.div 
+           initial={{ y: -20, opacity: 0 }}
+           animate={{ y: 0, opacity: 1 }}
+           className="flex flex-col items-center mb-8"
+         >
+             <Link to="/" className="flex items-center gap-3 mb-4 group">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/25 group-hover:scale-105 transition-transform duration-300">
+                    <GraduationCap className="w-7 h-7 text-white" />
                 </div>
               </div>
 

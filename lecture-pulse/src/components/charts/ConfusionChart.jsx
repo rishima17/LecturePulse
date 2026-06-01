@@ -8,7 +8,7 @@ const ConfusionChart = ({ data }) => {
   return (
     <div className="h-[200px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data}>
+        <BarChart data={data} isAnimationActive={false}>
           <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
           <YAxis fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
           <Tooltip 

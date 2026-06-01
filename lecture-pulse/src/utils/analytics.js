@@ -1,3 +1,4 @@
+
 const SCORES = {
     understanding: {
         'clear': 5,

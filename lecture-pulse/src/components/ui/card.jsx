@@ -4,12 +4,24 @@ import { cn } from "@/lib/utils"
 const Card = React.forwardRef(({ className, variant = "default", ...props }, ref) => {
   const variants = {
     default: "rounded-xl border bg-card text-card-foreground shadow-sm",
-    interactive: "rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow duration-300 bg-white/50 backdrop-blur-sm",
+    interactive:
+      `
+rounded-xl
+border border-border
+bg-card/80
+text-card-foreground
+backdrop-blur-md
+shadow-sm
+hover:shadow-lg
+hover:-translate-y-1
+transition-all
+duration-300
+`,
     elevated: "rounded-2xl shadow-xl",
     glass: "rounded-xl border bg-background/60 backdrop-blur-lg shadow-sm",
     gradient: "rounded-xl border bg-gradient-to-br from-background via-background to-muted/50 shadow-sm",
   }
-  
+
   return (
     <div
       ref={ref}
