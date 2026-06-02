@@ -59,13 +59,19 @@ export const getLecturesByTeacher = (teacherId) => {
 export const createLecture = (lectureData) => {
     try {
         const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
-        const newLecture = {
-            id: crypto.randomUUID(),
-            createdAt: new Date().toISOString(),
-            status: 'active',
-            ...lectureData
-        };
+       let code = lectureData.code;
 
+while (allSessions.some(session => session.code === code)) {
+    code = Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+const newLecture = {
+    id: crypto.randomUUID(),
+    createdAt: new Date().toISOString(),
+    status: 'active',
+    ...lectureData,
+    code
+};
         localStorage.setItem("lecturePulse_sessions", JSON.stringify([...allSessions, newLecture]));
         return newLecture;
     } catch (error) {
