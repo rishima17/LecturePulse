@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Trash2, Check } from "lucide-react";
 import { Trash2, Check, QrCode, X, Download } from "lucide-react";
 import { deleteLecture, getFeedbackByLecture } from "@/utils/storage";
 import { toast } from "sonner";
