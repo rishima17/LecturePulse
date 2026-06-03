@@ -9,6 +9,7 @@ import UnderstandingChart from '@/components/charts/UnderstandingChart';
 import AttentionChart from '@/components/charts/AttentionChart';
 import ConfusionChart from '@/components/charts/ConfusionChart';
 import FeedbackTimeline from '@/components/charts/FeedbackTimeline';
+import AISummaryCard from '@/components/AISummaryCard';
 import { generateLecturePDF } from "@/utils/pdfReport";
 import { useRef } from "react";
 import html2canvas from "html2canvas";
@@ -34,6 +35,7 @@ const Analytics = () => {
     return canvas.toDataURL('image/png');
   };
 
+  const [feedback, setFeedback] = useState([]);
   const loadData = useCallback(async () => {
     if (!sessionId) return;
     
@@ -60,7 +62,7 @@ const Analytics = () => {
         // Assume empty for now. Real app would wait for students.
         // Uncomment below to force mock data for specific tests or add a "Generate Mock Data" button
     }
-
+    setFeedback(feedback);
     const calculatedAnalytics = calculateAnalytics(feedback);
     setAnalytics(calculatedAnalytics);
   }, [sessionId, navigate]);
@@ -290,6 +292,7 @@ const Analytics = () => {
                 </CardContent>
               </Card>
             </div>
+            <AISummaryCard lecture={lecture} analytics={analytics} feedback={feedback} />
           </div>
         )}
       </main>
