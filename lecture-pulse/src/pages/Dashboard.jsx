@@ -7,12 +7,17 @@ import CreateLectureDialog from '@/components/CreateLectureDialog';
 import LectureCard from '@/components/LectureCard';
 import { LogOut, Plus, BarChart3, BookOpen, GraduationCap, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import PollCard from '@/components/PollCard';
+import CreatePollDialog from '@/components/CreatePollDialog';
+
 
 const Dashboard = () => {
 const [teacher, setTeacher] = useState(null);
 const [lectures, setLectures] = useState([]);
 const [searchTerm, setSearchTerm] = useState('');
 const [isCreateOpen, setIsCreateOpen] = useState(false);
+const [polls, setPolls] = useState([]);
+const [showPollDialog, setShowPollDialog] = useState(false);
 const navigate = useNavigate();
 
   useEffect(() => {
@@ -138,6 +143,14 @@ const pastLectures = filteredLectures.filter(l => !l.isActive);
       <Plus className="w-4 h-4 mr-2" />
       Create Lecture
     </Button>
+
+    <Button
+  onClick={() => setShowPollDialog(true)}
+  className="bg-purple-600 text-white hover:bg-purple-700"
+>
+  <Plus className="w-4 h-4 mr-2" />
+  Create Poll
+</Button>
   </div>
 </div>
 
@@ -193,6 +206,36 @@ const pastLectures = filteredLectures.filter(l => !l.isActive);
           </div>
         )}
       </main>
+
+
+      {polls.length > 0 && (
+  <div className="mt-6 space-y-4 container mx-auto px-4">
+    <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
+      Active Polls
+    </h3>
+    {polls.map(poll => (
+      <PollCard key={poll.id} poll={poll}
+        onVote={(opt) => {
+          setPolls(polls.map(p =>
+            p.id === poll.id
+              ? { ...p, options: p.options.map(o =>
+                  o.label === opt ? { ...o, votes: o.votes + 1 } : o
+                )}
+              : p
+          ));
+        }}
+        isTeacher={true}
+      />
+    ))}
+  </div>
+)}
+
+{showPollDialog && (
+  <CreatePollDialog
+    onSubmit={(poll) => setPolls([...polls, poll])}
+    onClose={() => setShowPollDialog(false)}
+  />
+)}
 
       <CreateLectureDialog 
         open={isCreateOpen} 
