@@ -70,28 +70,33 @@ By participating in this project, you agree to keep this space respectful, inclu
    cd LecturePulse
    ```
 
-2. **Change directory into the Vite React app:**
-   ```bash
-   cd lecture-pulse
-   ```
-
-3. **Install dependencies:**
+2. **Install root dependencies** (activates Husky commit hooks):
    ```bash
    npm install
    ```
 
-4. **Start the development server:**
+3. **Change directory into the Vite React app:**
+   ```bash
+   cd lecture-pulse
+   ```
+
+4. **Install app dependencies:**
+   ```bash
+   npm install
+   ```
+
+5. **Start the development server:**
    ```bash
    npm run dev
    ```
    The app will launch at `http://localhost:5173/` by default.
 
-5. **Verify ESLint configuration:**
+6. **Verify ESLint configuration:**
    ```bash
    npm run lint
    ```
 
-6. **Keep your fork up to date** before starting any new work:
+7. **Keep your fork up to date** before starting any new work:
    ```bash
    git fetch upstream
    git checkout main
@@ -189,20 +194,54 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) standard
 <type>(<optional scope>): <short description>
 ```
 
-**Examples for LecturePulse:**
-```text
-feat(dashboard): add export button for session feedback
-fix(student): resolve session code validation edge case
-docs: add environment setup steps to CONTRIBUTING.md
-chore(deps): upgrade framer-motion to v12
-refactor(analytics): simplify confusion timeline data transform
-style(landing): fix hero section overflow on mobile
-```
-
 **Rules:**
 - Use **imperative mood** — "add", not "added" or "adds"
 - Keep the subject line under **72 characters**
+- Type must be **lowercase**
 - Reference related issues at the bottom: `Fixes #42` or `Closes #7`
+
+#### Good commits ✅
+
+```text
+feat(dashboard): add export button for session feedback
+fix(auth): handle expired token on page refresh
+docs: add Husky setup steps to CONTRIBUTING.md
+style(landing): fix hero section overflow on mobile
+refactor(analytics): simplify confusion timeline data transform
+chore(deps): upgrade framer-motion to v12
+```
+
+#### Bad commits ❌ (will be rejected)
+
+```text
+added export button          # no type prefix
+Fix bug                      # vague, missing scope
+WIP                          # not descriptive
+feat: Added the export btn.  # past tense, trailing period
+FEAT(dashboard): Export      # uppercase type
+updated stuff                # no type, no context
+```
+
+### Automated Enforcement
+
+**Husky** runs `commitlint` on every commit. A non-conforming message is rejected immediately:
+
+```
+⧗  input: added export button
+✖  subject may not be empty [subject-empty]
+✖  type may not be empty [type-empty]
+
+✖  found 2 problems, 0 warnings
+```
+
+Fix the message and re-commit. Do **not** use `--no-verify` to bypass the hook — PRs with bypassed hooks will not be merged.
+
+**First-time setup** (after cloning): run `npm install` at the repo root to install Husky and activate the hooks:
+
+```bash
+# from LecturePulse/ (repo root)
+npm install
+```
 
 ---
 

@@ -70,7 +70,7 @@ const CreateLectureDialog = ({ open, onOpenChange, teacherId, onCreated }) => {
       toast.success("Lecture created successfully");
       setFormData({ subject: "", topic: "", duration: "60" });
       onCreated();
-    } catch (error) {
+    } catch {
       toast.error("Failed to create lecture");
     }
   };

@@ -1,19 +1,13 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [teacher, setTeacher] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Check local storage for existing session
-    const storedTeacher = localStorage.getItem("lecturePulse_teacher");
-    if (storedTeacher) {
-      setTeacher(JSON.parse(storedTeacher));
-    }
-    setLoading(false);
-  }, []);
+  const [teacher, setTeacher] = useState(() => {
+    const stored = localStorage.getItem("lecturePulse_teacher");
+    return stored ? JSON.parse(stored) : null;
+  });
+  const [loading] = useState(false);
 
   const login = (teacherId, password) => {
     // Hackathon Logic: Retrieve from array of teachers or single object?

@@ -26,6 +26,24 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
+const UnderstandingOption = ({ value, icon: Icon, label, color, understanding, setUnderstanding }) => (
+  <motion.button
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+    type="button"
+    onClick={() => setUnderstanding(value)}
+    className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all duration-300 ${understanding === value
+        ? `border-${color}-500 bg-${color}-500/10 text-${color}-600 shadow-md shadow-${color}-500/10`
+        : "border-muted bg-card hover:bg-muted/50 text-muted-foreground"
+      }`}
+  >
+    <Icon
+      className={`w-8 h-8 ${understanding === value ? `text-${color}-500` : ""}`}
+    />
+    <span className="font-medium text-sm">{label}</span>
+  </motion.button>
+);
+
 export default function Student() {
   const [step, setStep] = useState("code"); // code, feedback, success
   const [sessionCode, setSessionCode] = useState("");
@@ -115,24 +133,6 @@ export default function Student() {
       setLoading(false);
     }, 800);
   };
-
-  const UnderstandingOption = ({ value, icon: Icon, label, color }) => (
-    <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      type="button"
-      onClick={() => setUnderstanding(value)}
-      className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all duration-300 ${understanding === value
-          ? `border-${color}-500 bg-${color}-500/10 text-${color}-600 shadow-md shadow-${color}-500/10`
-          : "border-muted bg-card hover:bg-muted/50 text-muted-foreground"
-        }`}
-    >
-      <Icon
-        className={`w-8 h-8 ${understanding === value ? `text-${color}-500` : ""}`}
-      />
-      <span className="font-medium text-sm">{label}</span>
-    </motion.button>
-  );
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -278,18 +278,24 @@ export default function Student() {
                         icon={Smile}
                         label="Clear"
                         color="emerald"
+                        understanding={understanding}
+                        setUnderstanding={setUnderstanding}
                       />
                       <UnderstandingOption
                         value="partial"
                         icon={Meh}
                         label="Okay"
                         color="amber"
+                        understanding={understanding}
+                        setUnderstanding={setUnderstanding}
                       />
                       <UnderstandingOption
                         value="confusing"
                         icon={Frown}
                         label="Confused"
                         color="rose"
+                        understanding={understanding}
+                        setUnderstanding={setUnderstanding}
                       />
                     </div>
                   </div>
@@ -301,7 +307,7 @@ export default function Student() {
                       Current Attention Level
                     </label>
                     <div className="bg-muted/50 p-1.5 rounded-xl flex gap-1">
-                      {["Low", "Medium", "High"].map((level, i) => (
+                      {["Low", "Medium", "High"].map((level) => (
                         <button
                           key={level}
                           type="button"
@@ -324,7 +330,7 @@ export default function Student() {
                       When did you get confused? (Optional)
                     </label>
                     <div className="flex gap-3">
-                      {["Early", "Mid", "Late"].map((time, i) => (
+                      {["Early", "Mid", "Late"].map((time) => (
                         <Button
                           key={time}
                           type="button"
