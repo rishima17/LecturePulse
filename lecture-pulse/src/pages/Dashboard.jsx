@@ -6,6 +6,7 @@ import {
   clearCurrentTeacher,
   getCurrentTeacher,
   getLecturesByTeacher,
+  getFeedbackByLecture,
 } from "@/utils/storage";
 import {
   BarChart3,
@@ -64,6 +65,18 @@ const Dashboard = () => {
 
   const activeLectures = filteredLectures.filter((l) => l.isActive);
   const pastLectures = filteredLectures.filter((l) => !l.isActive);
+  const recentLectures = lectures // Get the latest 5 lectures that have received feedback
+  .filter((lecture) => getFeedbackByLecture(lecture.id).length > 0)
+  .sort((a, b) => {
+    const feedbackA = getFeedbackByLecture(a.id);
+    const feedbackB = getFeedbackByLecture(b.id);
+
+    const latestA = feedbackA[feedbackA.length - 1]?.submittedAt || "";
+    const latestB = feedbackB[feedbackB.length - 1]?.submittedAt || "";
+
+    return new Date(latestB) - new Date(latestA);
+  })
+  .slice(0, 5);
 
   return (
     <div className="min-h-screen bg-background">
@@ -138,6 +151,35 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+        {recentLectures.length > 0 && (
+  <Card className="mb-8">
+    <CardContent className="p-6">
+      <h2 className="text-lg font-semibold mb-4">
+        Recent Activity
+      </h2>
+
+      <div className="space-y-3">
+        {recentLectures.map((lecture) => (
+          <div
+            key={lecture.id}
+            className="flex items-center justify-between border-b pb-2"
+          >
+            <div>
+              <p className="font-medium">{lecture.topic}</p>
+              <p className="text-sm text-muted-foreground">
+                {lecture.subject}
+              </p>
+            </div>
+
+            <span className="text-sm text-muted-foreground">
+              {getFeedbackByLecture(lecture.id).length} feedback
+            </span>
+          </div>
+        ))}
+      </div>
+    </CardContent>
+  </Card>
+)}
 
         <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between mb-6">
           <h2 className="text-xl font-semibold text-foreground">
