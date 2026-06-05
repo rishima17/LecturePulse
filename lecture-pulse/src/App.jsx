@@ -5,10 +5,8 @@ import "./index.css";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import Student from "./pages/StudentFeedback";
 import Analytics from "./pages/Analytics";
 import StudentFeedback from "./pages/StudentFeedback";
-
 function App() {
   return (
     <AuthProvider>
