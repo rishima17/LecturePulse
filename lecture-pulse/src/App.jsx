@@ -7,6 +7,8 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Analytics from "./pages/Analytics";
 import StudentFeedback from "./pages/StudentFeedback";
+import Profile from "./pages/Profile";
+
 function App() {
   return (
     <AuthProvider>
@@ -16,6 +18,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/student" element={<StudentFeedback />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/analytics/:sessionId" element={<Analytics />} />
       </Routes>
     </AuthProvider>
