@@ -1,6 +1,5 @@
-
-import CreateLectureDialog from "@/components/CreateLectureDialog";
-import LectureCard from "@/components/LectureCard";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -9,6 +8,10 @@ import {
   getLecturesByTeacher,
   getFeedbackByLecture,
 } from "@/utils/storage";
+import CreateLectureDialog from "@/components/CreateLectureDialog";
+import LectureCard from "@/components/LectureCard";
+import CreatePollDialog from "@/components/CreatePollDialog";
+import PollCard from "@/components/PollCard";
 import {
   BarChart3,
   BookOpen,
@@ -16,23 +19,9 @@ import {
   LogOut,
   Plus,
   Search,
+  User,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { getCurrentTeacher, clearCurrentTeacher, getLecturesByTeacher } from '@/utils/storage';
-import CreateLectureDialog from '@/components/CreateLectureDialog';
-import LectureCard from '@/components/LectureCard';
-import PollCard from '@/components/PollCard';
-import CreatePollDialog from '@/components/CreatePollDialog';
-import { LogOut, Plus, BarChart3, BookOpen, GraduationCap, Search } from 'lucide-react';
-import { toast } from 'sonner';
-
 
 const Dashboard = () => {
   const [teacher, setTeacher] = useState(null);
@@ -95,8 +84,6 @@ const Dashboard = () => {
   })
   .slice(0, 5);
 
-  const activeLectures = filteredLectures.filter(l => l.isActive);
-  const pastLectures = filteredLectures.filter(l => !l.isActive);
 
 
   return (
@@ -112,10 +99,16 @@ const Dashboard = () => {
               <p className="text-xs text-muted-foreground">Welcome, {teacher.name}</p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="ml-auto sm:ml-0">
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
+          <div className="flex items-center gap-2 ml-auto sm:ml-0">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
+              <User className="w-4 h-4 mr-2" />
+              Profile
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
       </header>
 
