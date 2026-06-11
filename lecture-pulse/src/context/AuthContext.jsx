@@ -63,36 +63,78 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("lecturePulse_teacher");
   };
 
+  const OTP_EXPIRY_TIME = 5 * 60 * 1000; // 5 minutes
+
   const sendOTP = (email) => {
-    // Simulate sending OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    localStorage.setItem(`lecturePulse_otp_${email}`, otp);
-    return otp; // Returning OTP for hackathon demo purposes (to display in toast)
+
+    const otpData = {
+      otp,
+      timestamp: Date.now(),
+    };
+
+    localStorage.setItem(
+      `lecturePulse_otp_${email}`,
+      JSON.stringify(otpData)
+    );
+
+    return otp;
   };
 
   const verifyOTP = (email, otp) => {
-    const storedOtp = localStorage.getItem(`lecturePulse_otp_${email}`);
-    if (storedOtp && storedOtp === otp) {
-      localStorage.removeItem(`lecturePulse_otp_${email}`);
-      
-      // Update teacher session
-      const updatedSession = { ...teacher, email, emailVerified: true };
-      setTeacher(updatedSession);
-      localStorage.setItem("lecturePulse_teacher", JSON.stringify(updatedSession));
+    const storedData = localStorage.getItem(`lecturePulse_otp_${email}`);
 
-      // Update teacher in database
-      const teachersFn = localStorage.getItem("lecturePulse_teachers_db");
+    if (!storedData) {
+      return { success: false, message: "OTP not found." };
+    }
+
+    const { otp: storedOtp, timestamp } = JSON.parse(storedData);
+
+    const isExpired =
+      Date.now() - timestamp > OTP_EXPIRY_TIME;
+
+    if (isExpired) {
+      localStorage.removeItem(`lecturePulse_otp_${email}`);
+      return { success: false, message: "OTP has expired." };
+    }
+
+    if (storedOtp === otp) {
+      localStorage.removeItem(`lecturePulse_otp_${email}`);
+
+      const updatedSession = {
+        ...teacher,
+        email,
+        emailVerified: true,
+      };
+
+      setTeacher(updatedSession);
+      localStorage.setItem(
+        "lecturePulse_teacher",
+        JSON.stringify(updatedSession)
+      );
+
+      const teachersFn = localStorage.getItem(
+        "lecturePulse_teachers_db"
+      );
+
       if (teachersFn) {
         const teachers = JSON.parse(teachersFn);
+
         if (teachers[teacher.id]) {
           teachers[teacher.id].email = email;
           teachers[teacher.id].emailVerified = true;
-          localStorage.setItem("lecturePulse_teachers_db", JSON.stringify(teachers));
+
+          localStorage.setItem(
+            "lecturePulse_teachers_db",
+            JSON.stringify(teachers)
+          );
         }
       }
+
       return { success: true };
     }
-    return { success: false, message: "Invalid or expired OTP." };
+
+    return { success: false, message: "Invalid OTP." };
   };
 
   return (
