@@ -1,4 +1,28 @@
-const SCORES = {
+const STOP_WORDS = new Set([
+    "a","an","the","and","or","but","in","on","at","to","for","of","with",
+    "is","it","its","was","are","were","be","been","being","have","has","had",
+    "do","does","did","will","would","could","should","may","might","can",
+    "i","we","you","he","she","they","me","us","my","your","our","their",
+    "this","that","these","those","what","how","when","where","which","who",
+    "not","no","so","just","very","more","also","as","if","then","than","too",
+    "get","got","really","about","from","there","here","all","some","any"
+  ]);
+  
+  const extractKeywords = (comments, topN = 8) => {
+    const freq = {};
+    comments
+      .toLowerCase()
+      .replace(/[^a-z\s]/g, "")
+      .split(/\s+/)
+      .filter(word => word.length > 2 && !STOP_WORDS.has(word))
+      .forEach(word => { freq[word] = (freq[word] || 0) + 1; });
+  
+    return Object.entries(freq)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, topN)
+      .map(([word]) => word);
+  };
+  const SCORES = {
     understanding: { 'clear': 5, 'partial': 3, 'confusing': 1 },
     attention: { 'high': 5, 'medium': 3, 'low': 1 }
 };
@@ -45,7 +69,7 @@ export const calculateAnalytics = (feedback = []) => {
         .slice(0, 5);
 
     const comments = feedback.filter(f => f.comment).map(f => f.comment).join(" ");
-    const commonKeywords = comments ? ["fast", "examples", "unclear", "good"] : [];
+    const commonKeywords = comments ? extractKeywords(comments) : [];
 
     const suggestions = [];
     if (avgUnderstanding < 3) suggestions.push("Consider reviewing the core concepts again.");
