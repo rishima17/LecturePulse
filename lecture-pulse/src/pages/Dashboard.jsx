@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -64,26 +64,28 @@ const Dashboard = () => {
 
   if (!teacher) return null;
 
-  const filteredLectures = lectures
-    .filter((lecture) => {
-      const matchesSearch =
-        lecture.topic?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lecture.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lecture.code?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredLectures = useMemo(() => {
+    return lectures
+      .filter((lecture) => {
+        const matchesSearch =
+          lecture.topic?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          lecture.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          lecture.code?.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesStatus =
-        statusFilter === 'all' ||
-        (statusFilter === 'active' && lecture.isActive) ||
-        (statusFilter === 'completed' && !lecture.isActive);
+        const matchesStatus =
+          statusFilter === 'all' ||
+          (statusFilter === 'active' && lecture.isActive) ||
+          (statusFilter === 'completed' && !lecture.isActive);
 
-      return matchesSearch && matchesStatus;
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.createdAt || 0);
-      const dateB = new Date(b.createdAt || 0);
+        return matchesSearch && matchesStatus;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0);
+        const dateB = new Date(b.createdAt || 0);
 
-      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
-    });
+        return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+      });
+  }, [lectures, searchTerm, statusFilter, sortOrder]);
 
   const activeLectures = filteredLectures.filter((l) => l.isActive);
   const pastLectures = filteredLectures.filter((l) => !l.isActive);
