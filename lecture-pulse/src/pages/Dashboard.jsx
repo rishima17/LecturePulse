@@ -27,6 +27,8 @@ const Dashboard = () => {
   const [teacher, setTeacher] = useState(null);
   const [lectures, setLectures] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortOrder, setSortOrder] = useState('newest');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [polls, setPolls] = useState([]);
   const [showPollDialog, setShowPollDialog] = useState(false);
@@ -62,12 +64,26 @@ const Dashboard = () => {
 
   if (!teacher) return null;
 
-  const filteredLectures = lectures.filter((lecture) =>
-    lecture.topic?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lecture.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lecture.code?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredLectures = lectures
+    .filter((lecture) => {
+      const matchesSearch =
+        lecture.topic?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lecture.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lecture.code?.toLowerCase().includes(searchTerm.toLowerCase());
 
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'active' && lecture.isActive) ||
+        (statusFilter === 'completed' && !lecture.isActive);
+
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt || 0);
+      const dateB = new Date(b.createdAt || 0);
+
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+    });
 
   const activeLectures = filteredLectures.filter((l) => l.isActive);
   const pastLectures = filteredLectures.filter((l) => !l.isActive);
@@ -180,17 +196,45 @@ const Dashboard = () => {
 
         <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between mb-6">
           <h2 className="text-xl font-semibold text-foreground">Your Lectures</h2>
-          <div className="flex gap-3">
-            <div className="relative">
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="relative flex-1 min-w-[220px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search lectures..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border rounded-md bg-background"
+                className="w-full pl-10 pr-4 py-2 border rounded-md bg-background"
               />
             </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="border rounded-md px-3 py-2 bg-background"
+            >
+              <option value="all">All</option>
+              <option value="active">Active</option>
+              <option value="completed">Completed</option>
+            </select>
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="border rounded-md px-3 py-2 bg-background"
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+            </select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+                setSortOrder('newest');
+              }}
+            >
+              Clear Filters
+            </Button>
             <Button
               onClick={() => setIsCreateOpen(true)}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
