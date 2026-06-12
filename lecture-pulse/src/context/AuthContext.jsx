@@ -1,11 +1,11 @@
 import { createContext, useContext, useState } from "react";
+import { getCurrentTeacher } from "@/utils/storage";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [teacher, setTeacher] = useState(() => {
-    const stored = localStorage.getItem("lecturePulse_teacher");
-    return stored ? JSON.parse(stored) : null;
+    return getCurrentTeacher();
   });
   const [loading] = useState(false);
 
