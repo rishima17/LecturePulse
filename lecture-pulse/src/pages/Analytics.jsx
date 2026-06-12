@@ -74,6 +74,19 @@ const Analytics = () => {
     fetchData();
   }, [loadData]);
 
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === 'lecturePulse_feedback') {
+        loadData();
+      }
+    };
+
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [loadData]);
+
   if (!lecture || !analytics) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
