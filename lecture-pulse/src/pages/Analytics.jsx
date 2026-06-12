@@ -81,9 +81,15 @@ const Analytics = () => {
       }
     };
 
+    const onFeedbackUpdated = () => {
+      loadData();
+    };
+
     window.addEventListener('storage', onStorage);
+    window.addEventListener('feedback-updated', onFeedbackUpdated);
     return () => {
       window.removeEventListener('storage', onStorage);
+      window.removeEventListener('feedback-updated', onFeedbackUpdated);
     };
   }, [loadData]);
 
