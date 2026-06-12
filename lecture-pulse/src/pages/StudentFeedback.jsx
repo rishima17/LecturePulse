@@ -128,6 +128,12 @@ export default function Student() {
       ])
     );
 
+    window.dispatchEvent(new CustomEvent("feedback-updated", {
+      detail: {
+        lectureId: activeSession.id,
+      },
+    }));
+
     setTimeout(() => {
       setStep("success");
       setLoading(false);
