@@ -2,19 +2,67 @@
  * Storage utility functions for LecturePulse
  */
 
+const TEACHER_SESSION_KEY = "lecturePulse_teacher";
+const TEACHERS_DB_KEY = "lecturePulse_teachers_db";
+
+const clearStoredTeacherSession = () => {
+    localStorage.removeItem(TEACHER_SESSION_KEY);
+};
+
+const isValidTeacherSession = (sessionTeacher, storedTeacher) => {
+    if (!sessionTeacher || !sessionTeacher.id) {
+        return false;
+    }
+
+    if (!storedTeacher) {
+        return false;
+    }
+
+    if (storedTeacher.name !== sessionTeacher.name) {
+        return false;
+    }
+
+    if (storedTeacher.email && storedTeacher.email !== sessionTeacher.email) {
+        return false;
+    }
+
+    if (
+        storedTeacher.emailVerified !== undefined &&
+        storedTeacher.emailVerified !== sessionTeacher.emailVerified
+    ) {
+        return false;
+    }
+
+    return true;
+};
+
 // Teacher Management
 export const getCurrentTeacher = () => {
     try {
-        const teacher = localStorage.getItem("lecturePulse_teacher");
-        return teacher ? JSON.parse(teacher) : null;
+        const teacher = localStorage.getItem(TEACHER_SESSION_KEY);
+        if (!teacher) {
+            return null;
+        }
+
+        const sessionTeacher = JSON.parse(teacher);
+        const teachersDb = JSON.parse(localStorage.getItem(TEACHERS_DB_KEY) || "{}");
+        const storedTeacher = teachersDb[sessionTeacher.id];
+
+        if (!isValidTeacherSession(sessionTeacher, storedTeacher)) {
+            clearStoredTeacherSession();
+            return null;
+        }
+
+        return sessionTeacher;
     } catch (error) {
         console.error("Error getting current teacher", error);
+        clearStoredTeacherSession();
         return null;
     }
 };
 
 export const clearCurrentTeacher = () => {
-    localStorage.removeItem("lecturePulse_teacher");
+    clearStoredTeacherSession();
 };
 
 // Lecture/Session Management
