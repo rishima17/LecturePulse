@@ -18,7 +18,7 @@
 
 ## 📖 Table of Contents
 
-- [About LecturePulse](#-about-lecturepulse)
+- [💡 About LecturePulse](#-about-lecturepulse)
 - [Core Features](#-core-features)
 - [Tech Stack](#%EF%B8%8F-tech-stack)
 - [System Architecture](#%EF%B8%8F-system-architecture)
