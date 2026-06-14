@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Analytics from "./pages/Analytics";
 import StudentFeedback from "./pages/StudentFeedback";
 import Profile from "./pages/Profile";
+import BackToTop from "./components/BackToTop";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/analytics/:sessionId" element={<Analytics />} />
       </Routes>
+      <BackToTop />
     </AuthProvider>
   );
 }
