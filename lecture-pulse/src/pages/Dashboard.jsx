@@ -20,6 +20,7 @@ import {
   Plus,
   Search,
   User,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -40,13 +41,14 @@ const Dashboard = () => {
       navigate('/login');
       return;
     }
+    const teacherLectures = getLecturesByTeacher(currentTeacher.id);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTeacher(currentTeacher);
-    loadLectures(currentTeacher.id);
+    setLectures(teacherLectures);
   }, [navigate]);
 
-  const loadLectures = (teacherId) => {
-    const teacherLectures = getLecturesByTeacher(teacherId);
-    setLectures(teacherLectures);
+  const refreshLectures = (teacherId) => {
+    setLectures(getLecturesByTeacher(teacherId));
   };
 
   const handleLogout = () => {
@@ -57,12 +59,12 @@ const Dashboard = () => {
 
   const handleLectureCreated = () => {
     if (teacher) {
-      loadLectures(teacher.id);
+      refreshLectures(teacher.id);
     }
     setIsCreateOpen(false);
   };
 
-  if (!teacher) return null;
+  
 
   const filteredLectures = useMemo(() => {
     return lectures
@@ -102,7 +104,7 @@ const Dashboard = () => {
   })
   .slice(0, 5);
 
-
+if (!teacher) return null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -255,19 +257,57 @@ const Dashboard = () => {
         </div>
 
         {lectures.length === 0 ? (
-          <Card className="text-center py-12 border-dashed">
-            <CardContent>
-              <h3 className="text-lg font-medium">No lectures yet</h3>
-              <p className="text-muted-foreground mt-2">Create your first lecture!</p>
-            </CardContent>
-          </Card>
-        ) : filteredLectures.length === 0 ? (
-          <Card className="text-center py-12 border-dashed">
-            <CardContent>
-              <h3 className="text-lg font-medium">No lectures found</h3>
-              <p className="text-muted-foreground mt-2">Try a different search term.</p>
-            </CardContent>
-          </Card>
+         <Card className="border-dashed border-2 border-muted">
+  <CardContent className="flex flex-col items-center justify-center py-20 px-6 text-center gap-6">
+    <div className="relative">
+      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-cyan-500/20 flex items-center justify-center ring-1 ring-emerald-500/20">
+        <BookOpen className="w-9 h-9 text-emerald-500" />
+      </div>
+      <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-md shadow-emerald-500/30">
+        <Sparkles className="w-3 h-3 text-white" />
+      </div>
+    </div>
+    <div className="space-y-2 max-w-sm">
+      <h3 className="text-xl font-semibold text-foreground">No lectures yet</h3>
+      <p className="text-sm text-muted-foreground leading-relaxed">
+        Get started by creating your first lecture. Share a session code with
+        your students and collect real-time feedback instantly.
+      </p>
+    </div>
+    <Button
+      onClick={() => setIsCreateOpen(true)}
+      size="lg"
+      className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white hover:from-emerald-600 hover:to-cyan-600 shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:shadow-emerald-500/40 hover:-translate-y-0.5"
+    >
+      <Plus className="w-5 h-5 mr-2" />
+      Create Your First Lecture
+    </Button>
+    <p className="text-xs text-muted-foreground/60">
+      Students can join using a 6-digit session code — no signup required.
+    </p>
+  </CardContent>
+</Card>
+) : filteredLectures.length === 0 ? (
+<Card className="border-dashed border-2 border-muted">
+  <CardContent className="flex flex-col items-center justify-center py-16 px-6 text-center gap-4">
+    <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center">
+      <Search className="w-7 h-7 text-muted-foreground" />
+    </div>
+    <div className="space-y-1">
+      <h3 className="text-lg font-medium text-foreground">No lectures found</h3>
+      <p className="text-sm text-muted-foreground">
+        No lectures match your current filters. Try adjusting your search or{" "}
+        <button
+          onClick={() => { setSearchTerm(''); setStatusFilter('all'); setSortOrder('newest'); }}
+          className="text-primary underline-offset-2 hover:underline focus:outline-none"
+        >
+          clear all filters
+        </button>
+        .
+      </p>
+    </div>
+  </CardContent>
+</Card>
         ) : (
           <div className="space-y-6">
             {activeLectures.length > 0 && (
@@ -280,7 +320,7 @@ const Dashboard = () => {
                     <LectureCard
                       key={lecture.id}
                       lecture={lecture}
-                      onUpdate={() => loadLectures(teacher.id)}
+                      onUpdate={() => refreshLectures(teacher.id)}
                     />
                   ))}
                 </div>
@@ -296,7 +336,7 @@ const Dashboard = () => {
                     <LectureCard
                       key={lecture.id}
                       lecture={lecture}
-                      onUpdate={() => loadLectures(teacher.id)}
+                      onUpdate={() => refreshLectures(teacher.id)}
                     />
                   ))}
                 </div>
