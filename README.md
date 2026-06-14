@@ -22,7 +22,7 @@
 
 1. [💡 About LecturePulse](#-about-lecturepulse)
 2. [🎯 Core Features](#-core-features)
-3. [🛠️ Tech Stack](#-tech-stack)
+3. [🛠️ Tech Stack](#tech-stack)
 4. [🖧 System Architecture](#-system-architecture)
 5. [📂 Folder Structure](#-folder-structure)
 6. [🚀 How to Run](#-how-to-run)
