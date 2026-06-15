@@ -30,6 +30,7 @@ import {
   hasStudentSubmitted, 
   submitFeedback as saveFeedbackToStorage 
 } from "@/utils/storage";
+import { emitFeedback } from "@/lib/socket";
 
 const UnderstandingOption = ({ value, icon: Icon, label, color, understanding, setUnderstanding }) => (
   <motion.button
@@ -118,7 +119,10 @@ export default function Student() {
     };
 
     try {
-      saveFeedbackToStorage(feedbackData);
+      const savedFeedback = saveFeedbackToStorage(feedbackData);
+      
+      // Emit feedback via WebSocket for real-time synchronization
+      emitFeedback(activeSession.id, savedFeedback);
       
       window.dispatchEvent(new CustomEvent("feedback-updated", {
         detail: {

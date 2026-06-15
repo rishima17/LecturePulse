@@ -14,6 +14,7 @@ import { generateLecturePDF } from "@/utils/pdfReport";
 import { generateLectureCSV } from "@/utils/csvReport";
 import { useRef } from "react";
 import html2canvas from "html2canvas";
+import { socket, joinLectureRoom } from "@/lib/socket";
 
 const Analytics = () => {
   const { sessionId } = useParams();
@@ -74,6 +75,23 @@ const Analytics = () => {
     };
     fetchData();
   }, [loadData]);
+
+  useEffect(() => {
+    if (sessionId) {
+      joinLectureRoom(sessionId);
+      
+      const handleRealtimeFeedback = (newFeedback) => {
+        console.log("Real-time feedback received:", newFeedback);
+        loadData(); // Refresh data from storage
+      };
+
+      socket.on('feedback-updated', handleRealtimeFeedback);
+
+      return () => {
+        socket.off('feedback-updated', handleRealtimeFeedback);
+      };
+    }
+  }, [sessionId, loadData]);
 
   useEffect(() => {
     const onStorage = (e) => {
