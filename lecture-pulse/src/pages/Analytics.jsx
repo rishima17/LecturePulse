@@ -11,6 +11,7 @@ import ConfusionChart from '@/components/charts/ConfusionChart';
 import FeedbackTimeline from '@/components/charts/FeedbackTimeline';
 import AISummaryCard from '@/components/AISummaryCard';
 import { generateLecturePDF } from "@/utils/pdfReport";
+import { generateLectureCSV } from "@/utils/csvReport";
 import { useRef } from "react";
 import html2canvas from "html2canvas";
 
@@ -127,6 +128,20 @@ const Analytics = () => {
       },
     });
   };
+
+  const handleDownloadCSV = () => {
+    const teacher = getCurrentTeacher();
+
+    generateLectureCSV({
+      lecture,
+      analytics: {
+        ...analytics,
+        effectiveness,
+      },
+      teacher,
+      feedback,
+    });
+  };
   return (
     <div className="min-h-screen bg-background pb-12">
       {/* Header */}
@@ -152,6 +167,9 @@ const Analytics = () => {
               <Button variant="outline" size="sm" onClick={loadData}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownloadCSV}>
+                Export CSV
               </Button>
               <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
                 Download PDF Report
