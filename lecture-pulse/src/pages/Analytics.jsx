@@ -77,8 +77,8 @@ const Analytics = () => {
   }, [loadData]);
 
   useEffect(() => {
-    if (sessionId) {
-      joinLectureRoom(sessionId);
+    if (sessionId && lecture) {
+      joinLectureRoom(sessionId, lecture.code);
       
       const handleRealtimeFeedback = (newFeedback) => {
         console.log("Real-time feedback received:", newFeedback);
