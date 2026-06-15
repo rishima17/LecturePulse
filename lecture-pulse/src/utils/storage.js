@@ -4,9 +4,25 @@
 
 const TEACHER_SESSION_KEY = "lecturePulse_teacher";
 const TEACHERS_DB_KEY = "lecturePulse_teachers_db";
+const STUDENT_ID_KEY = "lecturePulse_student_id";
 
 const clearStoredTeacherSession = () => {
     localStorage.removeItem(TEACHER_SESSION_KEY);
+};
+
+// Student Identity Management
+export const getOrCreateStudentId = () => {
+    try {
+        let studentId = localStorage.getItem(STUDENT_ID_KEY);
+        if (!studentId) {
+            studentId = crypto.randomUUID();
+            localStorage.setItem(STUDENT_ID_KEY, studentId);
+        }
+        return studentId;
+    } catch (error) {
+        console.error("Error managing student ID", error);
+        return "anonymous-student";
+    }
 };
 
 const isValidTeacherSession = (sessionTeacher, storedTeacher) => {
@@ -83,6 +99,39 @@ export const getFeedbackByLecture = (lectureId) => {
     } catch (error) {
         console.error("Error getting feedback by lecture", error);
         return [];
+    }
+};
+
+export const hasStudentSubmitted = (lectureId, studentId) => {
+    try {
+        const allFeedback = JSON.parse(localStorage.getItem("lecturePulse_feedback") || "[]");
+        return allFeedback.some(f => f.lectureId === lectureId && f.studentId === studentId);
+    } catch (error) {
+        console.error("Error checking student submission", error);
+        return false;
+    }
+};
+
+export const submitFeedback = (feedbackData) => {
+    try {
+        const allFeedback = JSON.parse(localStorage.getItem("lecturePulse_feedback") || "[]");
+        
+        // Final server-side style check before persistence
+        if (hasStudentSubmitted(feedbackData.lectureId, feedbackData.studentId)) {
+            throw new Error("Already submitted feedback for this session");
+        }
+
+        const newFeedback = {
+            id: crypto.randomUUID(),
+            timestamp: new Date().toISOString(),
+            ...feedbackData
+        };
+
+        localStorage.setItem("lecturePulse_feedback", JSON.stringify([...allFeedback, newFeedback]));
+        return newFeedback;
+    } catch (error) {
+        console.error("Error submitting feedback", error);
+        throw error;
     }
 };
 
