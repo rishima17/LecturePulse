@@ -25,6 +25,11 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { 
+  getOrCreateStudentId, 
+  hasStudentSubmitted, 
+  submitFeedback as saveFeedbackToStorage 
+} from "@/utils/storage";
 
 const UnderstandingOption = ({ value, icon: Icon, label, color, understanding, setUnderstanding }) => (
   <motion.button
@@ -86,58 +91,49 @@ export default function Student() {
     }, 600);
   };
 
-  const submitFeedback = (e) => {
+  const handleFeedbackSubmit = (e) => {
     e.preventDefault();
     if (!understanding || !attention) {
       toast.error("Please choose your Understanding and Attention levels.");
       return;
     }
     setLoading(true);
-    const submittedSessions = JSON.parse(
-      localStorage.getItem("lecturePulse_submitted") || "[]"
-    );
 
-    if (submittedSessions.includes(activeSession.id)) {
+    const studentId = getOrCreateStudentId();
+    
+    // Check if already submitted using the robust storage check
+    if (hasStudentSubmitted(activeSession.id, studentId)) {
       toast.error("You have already submitted feedback for this session.");
       setLoading(false);
       return;
     }
 
-    const feedback = {
-      id: crypto.randomUUID(),
+    const feedbackData = {
       lectureId: activeSession.id,
+      studentId,
       understanding,
       attention,
       confusionTime,
       comment,
-      timestamp: new Date().toISOString(),
     };
 
-    const allFeedback = JSON.parse(
-      localStorage.getItem("lecturePulse_feedback") || "[]",
-    );
-    localStorage.setItem(
-      "lecturePulse_feedback",
-      JSON.stringify([...allFeedback, feedback]),
-    );
-    localStorage.setItem(
-      "lecturePulse_submitted",
-      JSON.stringify([
-        ...submittedSessions,
-        activeSession.id
-      ])
-    );
+    try {
+      saveFeedbackToStorage(feedbackData);
+      
+      window.dispatchEvent(new CustomEvent("feedback-updated", {
+        detail: {
+          lectureId: activeSession.id,
+        },
+      }));
 
-    window.dispatchEvent(new CustomEvent("feedback-updated", {
-      detail: {
-        lectureId: activeSession.id,
-      },
-    }));
-
-    setTimeout(() => {
-      setStep("success");
+      setTimeout(() => {
+        setStep("success");
+        setLoading(false);
+      }, 800);
+    } catch (err) {
+      toast.error(err.message || "Failed to submit feedback");
       setLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -376,7 +372,7 @@ export default function Student() {
                   )}
 
                   <Button
-                    onClick={submitFeedback}
+                    onClick={handleFeedbackSubmit}
                     size="lg"
                     className="w-full h-12 text-lg bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
                     disabled={loading}
