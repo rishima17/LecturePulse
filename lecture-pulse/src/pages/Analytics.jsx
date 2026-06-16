@@ -69,11 +69,29 @@ const Analytics = () => {
     setAnalytics(calculatedAnalytics);
   }, [sessionId, navigate]);
 
-  useEffect(() => {
+useEffect(() => {
     const fetchData = async () => {
       await loadData();
     };
     fetchData();
+
+    // Auto-refresh every 10 seconds
+    const interval = setInterval(() => {
+      loadData();
+    }, 10000);
+
+    // Listen for storage changes from other tabs
+    const handleStorageChange = (e) => {
+      if (e.key === "lecturePulse_feedback") {
+        loadData();
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, [loadData]);
 
   useEffect(() => {
