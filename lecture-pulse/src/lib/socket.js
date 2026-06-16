@@ -19,15 +19,28 @@ export const disconnectSocket = () => {
   }
 };
 
-export const joinLectureRoom = (lectureId) => {
+export const joinLectureRoom = (lectureId, code) => {
   if (socket.connected) {
-    socket.emit('join-lecture', lectureId);
+    socket.emit('join-lecture', lectureId, code);
   } else {
     socket.once('connect', () => {
-      socket.emit('join-lecture', lectureId);
+      socket.emit('join-lecture', lectureId, code);
     });
     socket.connect();
   }
+};
+
+export const validateCode = (code) => {
+  return new Promise((resolve) => {
+    if (!socket.connected) {
+      socket.once('connect', () => {
+        socket.emit('validate-code', code, (response) => resolve(response.available));
+      });
+      socket.connect();
+    } else {
+      socket.emit('validate-code', code, (response) => resolve(response.available));
+    }
+  });
 };
 
 export const emitFeedback = (lectureId, feedback) => {

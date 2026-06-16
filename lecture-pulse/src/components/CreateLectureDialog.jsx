@@ -4,9 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createLecture } from "@/utils/storage";
 import { toast } from "sonner";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
+import { validateCode } from "@/lib/socket";
 
 const CreateLectureDialog = ({ open, onOpenChange, teacherId, onCreated }) => {
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     subject: "",
     topic: "",
@@ -15,7 +17,19 @@ const CreateLectureDialog = ({ open, onOpenChange, teacherId, onCreated }) => {
 
   if (!open) return null;
 
-  const handleSubmit = (e) => {
+  const generateUniqueCode = async () => {
+    let code = Math.floor(100000 + Math.random() * 900000).toString();
+    const isAvailable = await validateCode(code);
+    
+    if (!isAvailable) {
+      console.log(`Collision detected for code ${code}, regenerating...`);
+      return await generateUniqueCode();
+    }
+    
+    return code;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.subject.trim()) {
       toast.error("Subject is required");
@@ -54,12 +68,9 @@ const CreateLectureDialog = ({ open, onOpenChange, teacherId, onCreated }) => {
       return;
     }
 
-    // if (duration > 300) {
-    //   toast.error("Duration cannot exceed 300 minutes");
-    //   return;
-    // }
+    setLoading(true);
     try {
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const code = await generateUniqueCode();
       createLecture({
         teacherId,
         code,
@@ -67,11 +78,14 @@ const CreateLectureDialog = ({ open, onOpenChange, teacherId, onCreated }) => {
         topic: formData.topic,
         duration: parseInt(formData.duration),
       });
-      toast.success("Lecture created successfully");
+      toast.success(`Lecture created successfully! Code: ${code}`);
       setFormData({ subject: "", topic: "", duration: "60" });
       onCreated();
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error("Failed to create lecture");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -139,8 +153,15 @@ const CreateLectureDialog = ({ open, onOpenChange, teacherId, onCreated }) => {
             >
               Cancel
             </Button>
-            <Button type="submit" variant="default">
-              Create Lecture
+            <Button type="submit" variant="default" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Lecture"
+              )}
             </Button>
           </div>
         </form>
