@@ -1,6 +1,5 @@
 export const generateAISummary = async (lecture, analytics, feedback) => {
   const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-  console.log("KEY:", apiKey);
 
   const feedbackSample = feedback.slice(0, 30).map(f => ({
     understanding: f.understanding,
