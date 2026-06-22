@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useTheme } from "../context/ThemeContext";
+import { Sun, Moon } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -51,6 +53,7 @@ const UnderstandingOption = ({ value, icon: Icon, label, color, understanding, s
 );
 
 export default function Student() {
+  const { theme, toggleTheme } = useTheme();
   const [step, setStep] = useState("code"); // code, feedback, success
   const [sessionCode, setSessionCode] = useState("");
   const [activeSession, setActiveSession] = useState(null);
@@ -149,6 +152,21 @@ export default function Student() {
           Back to Home
         </Button>
       </Link>
+
+      <div className="absolute top-4 right-4 md:top-8 md:right-8 z-50">
+        <button
+          onClick={toggleTheme}
+          className="w-11 h-11 rounded-full flex items-center justify-center
+          border border-border/50 bg-[#00C2C5]/20 hover:bg-[#00C2C5]/30
+          transition-all duration-300 hover:scale-105"
+        >
+          {theme === "dark" ? (
+            <Sun className="w-5 h-5 text-foreground" />
+          ) : (
+            <Moon className="w-5 h-5 text-foreground" />
+          )}
+        </button>
+      </div>
 
       {/* Background Decor */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">

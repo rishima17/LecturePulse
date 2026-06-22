@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useTheme } from "@/context/ThemeContext";
+import { Sun, Moon } from "lucide-react";
 import {
   clearCurrentTeacher,
   getCurrentTeacher,
@@ -25,6 +27,7 @@ import {
 import { toast } from "sonner";
 
 const Dashboard = () => {
+  const { theme, toggleTheme } = useTheme();
   const [teacher, setTeacher] = useState(null);
   const [lectures, setLectures] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -120,15 +123,38 @@ if (!teacher) return null;
             </div>
           </div>
           <div className="flex items-center gap-2 ml-auto sm:ml-0">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
-              <User className="w-4 h-4 mr-2" />
-              Profile
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
-          </div>
+  
+  {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                aria-label="Toggle Theme"
+                className="
+                  w-10 h-10 rounded-full
+                  flex items-center justify-center
+                  border border-border/50
+                  bg-[#00C2C5]/20
+                  hover:bg-[#00C2C5]/30
+                  transition-all duration-300
+                  hover:scale-105
+                "
+              >
+                {theme === "dark" ? (
+                  <Sun className="w-4 h-4 text-foreground" />
+                ) : (
+                  <Moon className="w-4 h-4 text-foreground" />
+                )}
+              </button>
+
+              <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
+                <User className="w-4 h-4 mr-2" />
+                Profile
+              </Button>
+
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
         </div>
       </header>
 
