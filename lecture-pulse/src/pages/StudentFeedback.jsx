@@ -162,7 +162,7 @@ export default function Student() {
         />
       </div>
 
-      <div className="w-full max-w-lg relative z-10">
+      <div className="w-full max-w-2xl relative z-10">
         {/* Navigation & Brand */}
         <motion.div
           initial={{ y: -20, opacity: 0 }}
@@ -192,8 +192,8 @@ export default function Student() {
             >
               <Card className="border-border/50 shadow-2xl backdrop-blur-xl bg-card/60">
                 <CardHeader className="text-center pb-2">
-                  <CardTitle className="text-2xl">Join Session</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-3xl md:text-4xl">Join Session</CardTitle>
+                  <CardDescription className="text-base md:text-lg">
                     Enter the 6-digit code provided by your teacher
                   </CardDescription>
                 </CardHeader>
@@ -258,7 +258,7 @@ export default function Student() {
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle className="text-xl">
+                      <CardTitle className="text-2xl md:text-3xl">
                         {activeSession?.topic}
                       </CardTitle>
                       <CardDescription className="flex items-center gap-2 mt-1">
@@ -274,7 +274,7 @@ export default function Student() {
                 <CardContent className="space-y-8">
                   {/* Understanding */}
                   <div className="space-y-4">
-                    <label className="text-sm font-medium flex items-center gap-2 text-foreground/80">
+                    <label className="text-base md:text-lg font-medium flex items-center gap-2 text-foreground/80">
                       <Brain className="w-4 h-4 text-primary" />
                       How well are you understanding?
                     </label>
