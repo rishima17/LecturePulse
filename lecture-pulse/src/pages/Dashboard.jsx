@@ -108,15 +108,15 @@ if (!teacher) return null;
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b bg-card/50 backdrop-blur-base sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
               <GraduationCap className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-foreground">LecturePulse</h1>
-              <p className="text-xs text-muted-foreground">Welcome, {teacher.name}</p>
+              <h1 className="text-2xl font-bold text-foreground">LecturePulse</h1>
+              <p className="text-base text-muted-foreground">Welcome, {teacher.name}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 ml-auto sm:ml-0">
@@ -135,43 +135,43 @@ if (!teacher) return null;
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-none">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+            <CardContent className="p-8 flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
                 <BookOpen className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{lectures.length}</p>
-                <p className="text-sm text-muted-foreground">Total Lectures</p>
+                <p className="text-3xl font-bold text-foreground">{lectures.length}</p>
+                <p className="text-base text-muted-foreground">Total Lectures</p>
               </div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-green-500/5 to-green-500/10 border-none">
-            <CardContent className="p-6 flex items-center gap-4">
+            <CardContent className="p-8 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
                 <BarChart3 className="w-6 h-6 text-green-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">{activeLectures.length}</p>
-                <p className="text-sm text-muted-foreground">Active Sessions</p>
+                <p className="text-base text-muted-foreground">Active Sessions</p>
               </div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-blue-500/5 to-blue-500/10 border-none">
-            <CardContent className="p-6 flex items-center gap-4">
+            <CardContent className="p-8 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
                 <BarChart3 className="w-6 h-6 text-blue-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">{pastLectures.length}</p>
-                <p className="text-sm text-muted-foreground">Completed</p>
+                <p className="text-base text-muted-foreground">Completed</p>
               </div>
             </CardContent>
           </Card>
         </div>
         {recentLectures.length > 0 && (
   <Card className="mb-8">
-    <CardContent className="p-6">
-      <h2 className="text-lg font-semibold mb-4">
+    <CardContent className="p-8">
+      <h2 className="text-2xl font-semibold mb-6">
         Recent Activity
       </h2>
 
@@ -182,13 +182,13 @@ if (!teacher) return null;
             className="flex items-center justify-between border-b pb-2"
           >
             <div>
-              <p className="font-medium">{lecture.topic}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xl font-medium">{lecture.topic}</p>
+              <p className="text-base text-muted-foreground">
                 {lecture.subject}
               </p>
             </div>
 
-            <span className="text-sm text-muted-foreground">
+            <span className="text-base text-muted-foreground">
               {getFeedbackByLecture(lecture.id).length} feedback
             </span>
           </div>
@@ -199,7 +199,7 @@ if (!teacher) return null;
 )}
 
         <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between mb-6">
-          <h2 className="text-xl font-semibold text-foreground">Your Lectures</h2>
+          <h2 className="text-3xl font-bold text-foreground">Your Lectures</h2>
           <div className="flex flex-wrap gap-3 items-center">
             <div className="relative flex-1 min-w-[220px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -208,7 +208,7 @@ if (!teacher) return null;
                 placeholder="Search lectures..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-md bg-background"
+                className="w-full pl-10 pr-4 py-3 text-base border rounded-md bg-background"
               />
             </div>
             <select
@@ -269,7 +269,7 @@ if (!teacher) return null;
     </div>
     <div className="space-y-2 max-w-sm">
       <h3 className="text-xl font-semibold text-foreground">No lectures yet</h3>
-      <p className="text-sm text-muted-foreground leading-relaxed">
+      <p className="text-base text-muted-foreground leading-relaxed">
         Get started by creating your first lecture. Share a session code with
         your students and collect real-time feedback instantly.
       </p>
@@ -294,8 +294,8 @@ if (!teacher) return null;
       <Search className="w-7 h-7 text-muted-foreground" />
     </div>
     <div className="space-y-1">
-      <h3 className="text-lg font-medium text-foreground">No lectures found</h3>
-      <p className="text-sm text-muted-foreground">
+      <h3 className="text-xl font-medium text-foreground">No lectures found</h3>
+      <p className="text-base text-muted-foreground">
         No lectures match your current filters. Try adjusting your search or{" "}
         <button
           onClick={() => { setSearchTerm(''); setStatusFilter('all'); setSortOrder('newest'); }}
@@ -312,7 +312,7 @@ if (!teacher) return null;
           <div className="space-y-6">
             {activeLectures.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
+                <h3 className="text-base font-semibold text-muted-foreground mb-4 uppercase tracking-wide">
                   Active Sessions
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -328,7 +328,7 @@ if (!teacher) return null;
             )}
             {pastLectures.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
+                <h3 className="text-base font-medium text-muted-foreground mb-3 uppercase tracking-wide">
                   Past Lectures
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -347,7 +347,7 @@ if (!teacher) return null;
 
         {polls.length > 0 && (
           <div className="mt-6 space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
+            <h3 className="text-base font-medium text-muted-foreground mb-3 uppercase tracking-wide">
               Active Polls
             </h3>
             {polls.map(poll => (

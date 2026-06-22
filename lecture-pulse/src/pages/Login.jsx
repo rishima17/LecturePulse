@@ -58,7 +58,7 @@ export default function Login() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[120px]" />
       </div>
 
-      <div className="w-full max-w-md z-10">
+      <div className="w-full max-w-xl z-10">
         <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex flex-col items-center mb-8">
           <Link to="/" className="flex items-center gap-3 mb-4 group">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/25 group-hover:scale-105 transition-transform duration-300">
@@ -70,7 +70,7 @@ export default function Login() {
         </motion.div>
 
         <Card className="border shadow-xl bg-card/80 backdrop-blur-sm">
-          <CardContent className="p-6">
+          <CardContent className="p-8">
             <form onSubmit={handleSubmit} className="space-y-4">
               <AnimatePresence mode="wait">
                 {!isLogin && (
@@ -78,7 +78,7 @@ export default function Login() {
                     <Label htmlFor="name">Full Name</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                      <Input id="name" placeholder="Your name" className="pl-9 bg-background/50" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                      <Input id="name" placeholder="Your name" className="pl-9 h-12 bg-background/50" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
                     </div>
                   </motion.div>
                 )}
@@ -88,7 +88,7 @@ export default function Login() {
                 <Label htmlFor="teacherId">Teacher ID</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                  <Input id="teacherId" placeholder="Enter your teacher ID" className="pl-9 bg-background/50" value={formData.teacherId} onChange={(e) => setFormData({ ...formData, teacherId: e.target.value })} />
+                  <Input id="teacherId" placeholder="Enter your teacher ID" className="pl-9 h-12 bg-background/50" value={formData.teacherId} onChange={(e) => setFormData({ ...formData, teacherId: e.target.value })} />
                 </div>
               </div>
 
@@ -96,7 +96,7 @@ export default function Login() {
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                  <Input id="password" type="password" placeholder="••••••••" className="pl-9 bg-background/50" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                  <Input id="password" type="password" placeholder="••••••••" className="pl-9 h-12 bg-background/50" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
                 </div>
               </div>
 
@@ -128,7 +128,7 @@ export default function Login() {
             </div>
           </CardContent>
 
-          <CardFooter className="bg-muted/30 p-4 justify-center">
+          <CardFooter className="bg-muted/30 p-6 justify-center">
             <p className="text-xs text-muted-foreground text-center">
               Protected by LecturePulse Security. <br /> By continuing, you agree to our Terms of Service.
             </p>
