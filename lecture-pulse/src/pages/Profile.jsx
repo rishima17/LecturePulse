@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle2, Mail, ShieldAlert } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
+import { Sun, Moon } from "lucide-react";
 
 export default function Profile() {
   const { teacher, sendOTP, verifyOTP } = useAuth();
   const navigate = useNavigate();
-
+  const { theme, toggleTheme } = useTheme();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState(1); // 1: Enter Email, 2: Enter OTP
@@ -52,7 +54,30 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4">
+    <div className="relative min-h-screen bg-background py-12 px-4">
+      {/* Theme Toggle */}
+      <div className="fixed top-10 right-4 z-[9999]">
+        <button
+          onClick={toggleTheme}
+          aria-label="Toggle Theme"
+          className="
+            w-11 h-11 rounded-full
+            flex items-center justify-center
+            border border-border/50
+            bg-[#00C2C5]/20
+            hover:bg-[#00C2C5]/30
+            transition-all duration-300
+            hover:scale-105
+            shadow-lg
+          "
+        >
+          {theme === "dark" ? (
+            <Sun className="w-5 h-5 text-foreground" />
+          ) : (
+            <Moon className="w-5 h-5 text-foreground" />
+          )}
+        </button>
+      </div>
       <div className="container mx-auto max-w-2xl">
         <Button 
           variant="ghost" 

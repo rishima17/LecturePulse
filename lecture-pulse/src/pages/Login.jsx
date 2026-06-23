@@ -7,8 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { GraduationCap, Loader2, User, Lock, ArrowRight, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "@/context/ThemeContext";
+import { Sun, Moon } from "lucide-react";
 
 export default function Login() {
+  const { theme, toggleTheme } = useTheme();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ name: "", teacherId: "", password: "" });
@@ -45,6 +48,28 @@ export default function Login() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 bg-background">
+      <div className="fixed top-8 right-4 z-50">
+  <button
+    onClick={toggleTheme}
+    aria-label="Toggle Theme"
+    className="
+      w-11 h-11 rounded-full
+      flex items-center justify-center
+      border border-border/50
+      bg-[#00C2C5]/20
+      hover:bg-[#00C2C5]/30
+      transition-all duration-300
+      hover:scale-105
+      shadow-lg
+    "
+  >
+    {theme === "dark" ? (
+      <Sun className="w-5 h-5 text-foreground" />
+    ) : (
+      <Moon className="w-5 h-5 text-foreground" />
+    )}
+  </button>
+</div>
       <Link to="/" className="absolute top-4 left-4 z-50 md:top-8 md:left-8">
         <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
           <Home className="w-4 h-4 mr-2" />
