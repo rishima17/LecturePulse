@@ -1,0 +1,76 @@
+.
+├── AGENTS.md
+├── CODE_OF_CONDUCT.md
+├── commitlint.config.js
+├── CONTRIBUTING.md
+├── lecture-pulse
+│   ├── eslint.config.js
+│   ├── image.png
+│   ├── index.html
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── public
+│   │   ├── image.png
+│   │   └── vite.svg
+│   ├── README.md
+│   ├── src
+│   │   ├── App.jsx
+│   │   ├── assets
+│   │   │   ├── hero-bg.png
+│   │   │   └── react.svg
+│   │   ├── components
+│   │   │   ├── AISummaryCard.jsx
+│   │   │   ├── BackToTop.jsx
+│   │   │   ├── charts
+│   │   │   │   ├── AttendanceParticipationChart.jsx
+│   │   │   │   ├── AttentionChart.jsx
+│   │   │   │   ├── ConfusionChart.jsx
+│   │   │   │   ├── FeedbackTimeline.jsx
+│   │   │   │   └── UnderstandingChart.jsx
+│   │   │   ├── CreateLectureDialog.jsx
+│   │   │   ├── CreatePollDialog.jsx
+│   │   │   ├── LectureCard.jsx
+│   │   │   ├── PollCard.jsx
+│   │   │   └── ui
+│   │   │       ├── button.jsx
+│   │   │       ├── card.jsx
+│   │   │       ├── input.jsx
+│   │   │       └── label.jsx
+│   │   ├── context
+│   │   │   ├── AuthContext.jsx
+│   │   │   └── ThemeContext.jsx
+│   │   ├── index.css
+│   │   ├── lib
+│   │   │   ├── socket.js
+│   │   │   └── utils.js
+│   │   ├── main.jsx
+│   │   ├── pages
+│   │   │   ├── Analytics.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Landing.jsx
+│   │   │   ├── Login.jsx
+│   │   │   ├── Profile.jsx
+│   │   │   └── StudentFeedback.jsx
+│   │   ├── types
+│   │   │   └── lecture.js
+│   │   └── utils
+│   │       ├── aiSummary.js
+│   │       ├── analytics.js
+│   │       ├── csvReport.js
+│   │       ├── pdfReport.js
+│   │       └── storage.js
+│   └── vite.config.js
+├── lecture-pulse-server
+│   ├── package.json
+│   ├── package-lock.json
+│   └── src
+│       └── index.js
+├── LICENSE
+├── package.json
+├── package-lock.json
+├── README.md
+├── SECURITY.md
+├── skills-lock.json
+└── text.txt
+
+15 directories, 59 files
