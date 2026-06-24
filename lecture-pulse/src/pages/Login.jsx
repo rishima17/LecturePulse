@@ -30,12 +30,12 @@ export default function Login() {
     await new Promise((resolve) => setTimeout(resolve, 800));
     let result;
     if (isLogin) {
-      result = login(formData.teacherId, formData.password);
+      result = await login(formData.teacherId, formData.password);
     } else {
       if (!formData.name) {
         result = { success: false, message: "Name is required." };
       } else {
-        result = register(formData.name, formData.teacherId, formData.password);
+        result = await register(formData.name, formData.teacherId, formData.password);
       }
     }
     if (result.success) {
