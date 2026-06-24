@@ -27,10 +27,11 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { 
-  getOrCreateStudentId, 
-  hasStudentSubmitted, 
-  submitFeedback as saveFeedbackToStorage 
+import {
+  getOrCreateStudentId,
+  hasStudentSubmitted,
+  submitFeedback as saveFeedbackToStorage,
+  addAttendance
 } from "@/utils/storage";
 import { emitFeedback } from "@/lib/socket";
 
@@ -54,7 +55,11 @@ const UnderstandingOption = ({ value, icon: Icon, label, color, understanding, s
 
 export default function Student() {
   const { theme, toggleTheme } = useTheme();
-  const [step, setStep] = useState("code"); // code, feedback, success
+  // Attendance fields
+  const [attendeeName, setAttendeeName] = useState("");
+  const [attendeeRoll, setAttendeeRoll] = useState("");
+  const [attendeeStudentId, setAttendeeStudentId] = useState("");
+  const [step, setStep] = useState("code"); // code, attendance, feedback, success
   const [sessionCode, setSessionCode] = useState("");
   const [activeSession, setActiveSession] = useState(null);
   const [error, setError] = useState("");
@@ -87,7 +92,8 @@ export default function Student() {
 
       if (session) {
         setActiveSession(session);
-        setStep("feedback");
+        // Proceed to optional attendance step
+        setStep("attendance");
       } else {
         toast.error("Invalid or inactive session code.");
       }
@@ -224,7 +230,6 @@ export default function Student() {
                         placeholder="CODE"
                         maxLength={6}
                         value={sessionCode}
-                        // onChange={(e) => setSessionCode(e.target.value)}
                         onChange={(e) => {
                           const value = e.target.value
                             .toUpperCase()
@@ -259,6 +264,61 @@ export default function Student() {
                       )}
                     </Button>
                   </form>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {step === "attendance" && (
+            <motion.div
+              key="attendance"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <Card className="border-border/50 shadow-2xl backdrop-blur-xl bg-card/80">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-2xl md:text-3xl">Attendance Information (Optional)</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Input
+                    placeholder="Name (optional)"
+                    value={attendeeName}
+                    onChange={(e) => setAttendeeName(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Roll Number (optional)"
+                    value={attendeeRoll}
+                    onChange={(e) => setAttendeeRoll(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Student ID (optional)"
+                    value={attendeeStudentId}
+                    onChange={(e) => setAttendeeStudentId(e.target.value)}
+                  />
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    onClick={() => {
+                      // Generate attendance record and persist
+                      const generatedId = crypto.randomUUID();
+                      const entry = {
+                        attendeeId: generatedId,
+                        name: attendeeName.trim() || null,
+                        rollNumber: attendeeRoll.trim() || null,
+                        studentId: attendeeStudentId.trim() || null,
+                        joinedAt: new Date().toISOString(),
+                        anonymous: !attendeeName && !attendeeRoll && !attendeeStudentId,
+                      };
+                      // Persist via storage util
+                      addAttendance(activeSession.id, entry.studentId);
+                      // Move to feedback step
+                      setStep("feedback");
+                    }}
+                    disabled={loading}
+                  >
+                    Continue to Feedback
+                  </Button>
                 </CardContent>
               </Card>
             </motion.div>

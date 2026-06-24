@@ -198,3 +198,32 @@ export const deleteLecture = (lectureId) => {
         console.error("Error deleting lecture", error);
     }
 };
+
+// Attendance Management
+export const addAttendance = (lectureId, studentId) => {
+  try {
+    const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
+    const updatedSessions = allSessions.map(s => {
+      if (s.id === lectureId) {
+        const attendance = s.attendance ? [...s.attendance] : [];
+        attendance.push({ studentId, timestamp: new Date().toISOString() });
+        return { ...s, attendance };
+      }
+      return s;
+    });
+    localStorage.setItem("lecturePulse_sessions", JSON.stringify(updatedSessions));
+  } catch (error) {
+    console.error("Error adding attendance", error);
+  }
+};
+
+export const getAttendance = (lectureId) => {
+  try {
+    const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
+    const lecture = allSessions.find(s => s.id === lectureId);
+    return lecture?.attendance || [];
+  } catch (error) {
+    console.error("Error getting attendance", error);
+    return [];
+  }
+};
