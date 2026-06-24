@@ -28,8 +28,25 @@ import { toast } from "sonner";
 
 const Dashboard = () => {
   const { theme, toggleTheme } = useTheme();
-  const [teacher, setTeacher] = useState(null);
-  const [lectures, setLectures] = useState([]);
+  const [teacher] = useState(() => {
+    const t = getCurrentTeacher();
+    return t ? t : null;
+  });
+  const [lectures, setLectures] = useState(() => {
+    const t = getCurrentTeacher();
+    return t ? getLecturesByTeacher(t.id) : [];
+  });
+    const totalAttendance = useMemo(() => {
+    return lectures.reduce((sum, lecture) => sum + (lecture.attendance?.length || 0), 0);
+  }, [lectures]);
+
+  const totalFeedback = useMemo(() => {
+    return lectures.reduce((sum, lecture) => sum + getFeedbackByLecture(lecture.id).length, 0);
+  }, [lectures]);
+
+  const participationRate = useMemo(() => {
+    return totalAttendance ? Math.round((totalFeedback / totalAttendance) * 100) : 0;
+  }, [totalAttendance, totalFeedback]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortOrder, setSortOrder] = useState('newest');
@@ -38,17 +55,12 @@ const Dashboard = () => {
   const [showPollDialog, setShowPollDialog] = useState(false);
   const navigate = useNavigate();
 
+  // Redirect to login if no teacher is present
   useEffect(() => {
-    const currentTeacher = getCurrentTeacher();
-    if (!currentTeacher) {
+    if (!teacher) {
       navigate('/login');
-      return;
     }
-    const teacherLectures = getLecturesByTeacher(currentTeacher.id);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTeacher(currentTeacher);
-    setLectures(teacherLectures);
-  }, [navigate]);
+  }, [teacher, navigate]);
 
   const refreshLectures = (teacherId) => {
     setLectures(getLecturesByTeacher(teacherId));
@@ -237,6 +249,29 @@ if (!teacher) return null;
                 className="w-full pl-10 pr-4 py-3 text-base border rounded-md bg-background"
               />
             </div>
+            {/* Attendance Insights */}
+            <Card className="bg-gradient-to-br from-purple-500/5 to-purple-500/10 border-none">
+              <CardContent className="p-8 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                  <BarChart3 className="w-6 h-6 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{totalAttendance}</p>
+                  <p className="text-base text-muted-foreground">Total Attendance</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-indigo-500/5 to-indigo-500/10 border-none">
+              <CardContent className="p-8 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-indigo-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{participationRate}%</p>
+                  <p className="text-base text-muted-foreground">Participation Rate</p>
+                </div>
+              </CardContent>
+            </Card>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}

@@ -143,3 +143,22 @@ export const getEffectivenessLabel = (score) => {
     if (score >= 40) return { label: "Average", color: "text-yellow-500" };
     return { label: "Needs Improvement", color: "text-red-500" };
 };
+
+// Attendance Analytics Helpers
+/**
+ * Calculates attendance statistics for a set of lectures.
+ * @param {Array} lectures - Array of lecture objects.
+ * @returns {{ totalAttendance: number, totalFeedback: number, participationRate: number }}
+ */
+export const calculateAttendanceStats = (lectures) => {
+  let totalAttendance = 0;
+  let totalFeedback = 0;
+  lectures.forEach((lecture) => {
+    const attendance = lecture.attendance ? lecture.attendance.length : 0;
+    const feedback = lecture.feedbackCount || 0; // caller may set this
+    totalAttendance += attendance;
+    totalFeedback += feedback;
+  });
+  const participationRate = totalAttendance ? Math.round((totalFeedback / totalAttendance) * 100) : 0;
+  return { totalAttendance, totalFeedback, participationRate };
+};

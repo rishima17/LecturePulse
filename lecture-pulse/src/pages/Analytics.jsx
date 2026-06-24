@@ -10,6 +10,7 @@ import AttentionChart from '@/components/charts/AttentionChart';
 import ConfusionChart from '@/components/charts/ConfusionChart';
 import FeedbackTimeline from '@/components/charts/FeedbackTimeline';
 import AISummaryCard from '@/components/AISummaryCard';
+import AttendanceParticipationChart from '@/components/charts/AttendanceParticipationChart';
 import { generateLecturePDF } from "@/utils/pdfReport";
 import { generateLectureCSV } from "@/utils/csvReport";
 import { useRef } from "react";
@@ -38,6 +39,9 @@ const Analytics = () => {
   };
 
   const [feedback, setFeedback] = useState([]);
+  const totalAttendance = lecture?.attendance?.length || 0;
+  const participationRate = totalAttendance ? Math.round((totalFeedback / totalAttendance) * 100) : 0;
+  const totalFeedback = feedback.length;
   const loadData = useCallback(async () => {
     if (!sessionId) return;
     
@@ -109,7 +113,7 @@ useEffect(() => {
         socket.off('feedback-updated', handleRealtimeFeedback);
       };
     }
-  }, [sessionId, loadData]);
+  }, [sessionId, lecture, loadData]);
 
   useEffect(() => {
     const onStorage = (e) => {
@@ -272,6 +276,30 @@ useEffect(() => {
                 </CardContent>
               </Card>
             </div>
+            {/* Attendance & Participation Card */}
+            <Card className="bg-gradient-to-br from-purple-500/5 to-purple-500/10 border-none">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <BarChart3 className="w-6 h-6 text-purple-600" />
+                  <h3 className="text-lg font-medium text-foreground">Attendance Overview</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-foreground">{totalAttendance}</p>
+                    <p className="text-sm text-muted-foreground">Total Attendance</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-foreground">{totalFeedback}</p>
+                    <p className="text-sm text-muted-foreground">Feedback Submissions</p>
+                  </div>
+                  <div className="col-span-2 text-center">
+                    <p className="text-2xl font-bold text-foreground">{participationRate}%</p>
+                    <p className="text-sm text-muted-foreground">Participation Rate</p>
+                  </div>
+                </div>
+                <AttendanceParticipationChart attendance={totalAttendance} feedback={totalFeedback} />
+              </CardContent>
+            </Card>
 
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
