@@ -4,12 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTheme } from "@/context/ThemeContext";
 import { Sun, Moon } from "lucide-react";
-import {
-  clearCurrentTeacher,
-  getCurrentTeacher,
-  getLecturesByTeacher,
-  getFeedbackByLecture,
-} from "@/utils/storage";
+import { useAuth } from "@/context/AuthContext";
+import { getLecturesByTeacher, getFeedbackByLecture } from "@/utils/storage";
 import CreateLectureDialog from "@/components/CreateLectureDialog";
 import LectureCard from "@/components/LectureCard";
 import CreatePollDialog from "@/components/CreatePollDialog";
@@ -28,14 +24,8 @@ import { toast } from "sonner";
 
 const Dashboard = () => {
   const { theme, toggleTheme } = useTheme();
-  const [teacher] = useState(() => {
-    const t = getCurrentTeacher();
-    return t ? t : null;
-  });
-  const [lectures, setLectures] = useState(() => {
-    const t = getCurrentTeacher();
-    return t ? getLecturesByTeacher(t.id) : [];
-  });
+  const { teacher, logout } = useAuth();
+  const [lectures, setLectures] = useState([]);
     const totalAttendance = useMemo(() => {
     return lectures.reduce((sum, lecture) => sum + (lecture.attendance?.length || 0), 0);
   }, [lectures]);
@@ -62,12 +52,23 @@ const Dashboard = () => {
     }
   }, [teacher, navigate]);
 
+  // Load lectures when teacher is present
+  useEffect(() => {
+    if (teacher) {
+      const fetchLectures = async () => {
+        const data = getLecturesByTeacher(teacher.id);
+        setLectures(data);
+      };
+      fetchLectures();
+    }
+  }, [teacher]);
+
   const refreshLectures = (teacherId) => {
     setLectures(getLecturesByTeacher(teacherId));
   };
 
   const handleLogout = () => {
-    clearCurrentTeacher();
+    logout();
     toast.success('Logged out successfully');
     navigate('/login');
   };
@@ -119,7 +120,13 @@ const Dashboard = () => {
   })
   .slice(0, 5);
 
-if (!teacher) return null;
+if (!teacher) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-xl text-muted-foreground">Loading dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
