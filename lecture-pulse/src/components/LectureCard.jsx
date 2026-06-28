@@ -11,17 +11,21 @@ const LectureCard = ({ lecture, onUpdate }) => {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const feedbackCount = getFeedbackByLecture(lecture.id).length;
 
   const joinUrl = `${window.location.origin}/student?code=${lecture.code}`;
 
   const handleDelete = (e) => {
     e.stopPropagation();
-    if (window.confirm("Are you sure you want to delete this session?")) {
-      deleteLecture(lecture.id);
-      toast.success("Lecture deleted successfully");
-      onUpdate();
-    }
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    deleteLecture(lecture.id);
+    toast.success("Lecture deleted successfully");
+    onUpdate();
+    setShowDeleteModal(false);
   };
 
   const handleNavigate = () => {
@@ -68,7 +72,7 @@ const LectureCard = ({ lecture, onUpdate }) => {
   };
 
   return (
-    <Card className="rounded-xl border shadow-sm hover:shadow-md transition-all duration-300 bg-white group overflow-hidden">
+    <Card className="rounded-xl border shadow-sm hover:shadow-md transition-all duration-300 group overflow-hidden">
       <CardContent className="p-5 flex flex-col h-full gap-4">
         {/* Header */}
         <div className="flex justify-between items-start">
@@ -143,7 +147,7 @@ const LectureCard = ({ lecture, onUpdate }) => {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="bg-white p-3 rounded-lg shadow-sm">
+            <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
               <QRCodeSVG
                 id={`qr-${lecture.id}`}
                 value={joinUrl}
@@ -219,8 +223,40 @@ const LectureCard = ({ lecture, onUpdate }) => {
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
+
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Delete Lecture?
+              </h3>
+
+              <p className="text-sm text-muted-foreground mb-6">
+                Are you sure you want to delete "{lecture.topic}"?
+                This action cannot be undone.
+              </p>
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  variant="destructive"
+                  onClick={confirmDelete}
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
 };
+
 export default LectureCard;
