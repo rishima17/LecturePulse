@@ -1,6 +1,5 @@
-
-import CreateLectureDialog from "@/components/CreateLectureDialog";
-import LectureCard from "@/components/LectureCard";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -9,6 +8,10 @@ import {
   getLecturesByTeacher,
   getFeedbackByLecture,
 } from "@/utils/storage";
+import CreateLectureDialog from "@/components/CreateLectureDialog";
+import LectureCard from "@/components/LectureCard";
+import PollCard from "@/components/PollCard";
+import CreatePollDialog from "@/components/CreatePollDialog";
 import {
   BarChart3,
   BookOpen,
@@ -17,27 +20,12 @@ import {
   Plus,
   Search,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { getCurrentTeacher, clearCurrentTeacher, getLecturesByTeacher } from '@/utils/storage';
-import CreateLectureDialog from '@/components/CreateLectureDialog';
-import LectureCard from '@/components/LectureCard';
-import PollCard from '@/components/PollCard';
-import CreatePollDialog from '@/components/CreatePollDialog';
-import { LogOut, Plus, BarChart3, BookOpen, GraduationCap, Search } from 'lucide-react';
-import { toast } from 'sonner';
-
 
 const Dashboard = () => {
   const [teacher, setTeacher] = useState(null);
   const [lectures, setLectures] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [polls, setPolls] = useState([]);
   const [showPollDialog, setShowPollDialog] = useState(false);
@@ -46,7 +34,7 @@ const Dashboard = () => {
   useEffect(() => {
     const currentTeacher = getCurrentTeacher();
     if (!currentTeacher) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
     setTeacher(currentTeacher);
@@ -60,8 +48,8 @@ const Dashboard = () => {
 
   const handleLogout = () => {
     clearCurrentTeacher();
-    toast.success('Logged out successfully');
-    navigate('/login');
+    toast.success("Logged out successfully");
+    navigate("/login");
   };
 
   const handleLectureCreated = () => {
@@ -73,31 +61,29 @@ const Dashboard = () => {
 
   if (!teacher) return null;
 
-  const filteredLectures = lectures.filter((lecture) =>
-    lecture.topic?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lecture.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lecture.code?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredLectures = lectures.filter(
+    (lecture) =>
+      lecture.topic?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lecture.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lecture.code?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
 
   const activeLectures = filteredLectures.filter((l) => l.isActive);
   const pastLectures = filteredLectures.filter((l) => !l.isActive);
-  const recentLectures = lectures // Get the latest 5 lectures that have received feedback
-  .filter((lecture) => getFeedbackByLecture(lecture.id).length > 0)
-  .sort((a, b) => {
-    const feedbackA = getFeedbackByLecture(a.id);
-    const feedbackB = getFeedbackByLecture(b.id);
 
-    const latestA = feedbackA[feedbackA.length - 1]?.submittedAt || "";
-    const latestB = feedbackB[feedbackB.length - 1]?.submittedAt || "";
+  // Latest 5 lectures that have received feedback, most recent feedback first
+  const recentLectures = lectures
+    .filter((lecture) => getFeedbackByLecture(lecture.id).length > 0)
+    .sort((a, b) => {
+      const feedbackA = getFeedbackByLecture(a.id);
+      const feedbackB = getFeedbackByLecture(b.id);
 
-    return new Date(latestB) - new Date(latestA);
-  })
-  .slice(0, 5);
+      const latestA = feedbackA[feedbackA.length - 1]?.submittedAt || "";
+      const latestB = feedbackB[feedbackB.length - 1]?.submittedAt || "";
 
-  const activeLectures = filteredLectures.filter(l => l.isActive);
-  const pastLectures = filteredLectures.filter(l => !l.isActive);
-
+      return new Date(latestB) - new Date(latestA);
+    })
+    .slice(0, 5);
 
   return (
     <div className="min-h-screen bg-background">
@@ -155,35 +141,30 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+
         {recentLectures.length > 0 && (
-  <Card className="mb-8">
-    <CardContent className="p-6">
-      <h2 className="text-lg font-semibold mb-4">
-        Recent Activity
-      </h2>
-
-      <div className="space-y-3">
-        {recentLectures.map((lecture) => (
-          <div
-            key={lecture.id}
-            className="flex items-center justify-between border-b pb-2"
-          >
-            <div>
-              <p className="font-medium">{lecture.topic}</p>
-              <p className="text-sm text-muted-foreground">
-                {lecture.subject}
-              </p>
-            </div>
-
-            <span className="text-sm text-muted-foreground">
-              {getFeedbackByLecture(lecture.id).length} feedback
-            </span>
-          </div>
-        ))}
-      </div>
-    </CardContent>
-  </Card>
-)}
+          <Card className="mb-8">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
+              <div className="space-y-3">
+                {recentLectures.map((lecture) => (
+                  <div
+                    key={lecture.id}
+                    className="flex items-center justify-between border-b pb-2"
+                  >
+                    <div>
+                      <p className="font-medium">{lecture.topic}</p>
+                      <p className="text-sm text-muted-foreground">{lecture.subject}</p>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {getFeedbackByLecture(lecture.id).length} feedback
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between mb-6">
           <h2 className="text-xl font-semibold text-foreground">Your Lectures</h2>
@@ -237,7 +218,7 @@ const Dashboard = () => {
                   Active Sessions
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {activeLectures.map(lecture => (
+                  {activeLectures.map((lecture) => (
                     <LectureCard
                       key={lecture.id}
                       lecture={lecture}
@@ -253,7 +234,7 @@ const Dashboard = () => {
                   Past Lectures
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {pastLectures.map(lecture => (
+                  {pastLectures.map((lecture) => (
                     <LectureCard
                       key={lecture.id}
                       lecture={lecture}
@@ -271,16 +252,23 @@ const Dashboard = () => {
             <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
               Active Polls
             </h3>
-            {polls.map(poll => (
-              <PollCard key={poll.id} poll={poll}
+            {polls.map((poll) => (
+              <PollCard
+                key={poll.id}
+                poll={poll}
                 onVote={(opt) => {
-                  setPolls(polls.map(p =>
-                    p.id === poll.id
-                      ? { ...p, options: p.options.map(o =>
-                          o.label === opt ? { ...o, votes: o.votes + 1 } : o
-                        )}
-                      : p
-                  ));
+                  setPolls(
+                    polls.map((p) =>
+                      p.id === poll.id
+                        ? {
+                            ...p,
+                            options: p.options.map((o) =>
+                              o.label === opt ? { ...o, votes: o.votes + 1 } : o
+                            ),
+                          }
+                        : p
+                    )
+                  );
                 }}
                 isTeacher={true}
               />
@@ -299,7 +287,7 @@ const Dashboard = () => {
       <CreateLectureDialog
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
-        teacherId={teacher ? teacher.id : ''}
+        teacherId={teacher ? teacher.id : ""}
         onCreated={handleLectureCreated}
       />
     </div>
