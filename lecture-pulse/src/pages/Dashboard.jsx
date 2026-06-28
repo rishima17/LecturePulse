@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useTheme } from "@/context/ThemeContext";
+import { Sun, Moon } from "lucide-react";
 import {
   clearCurrentTeacher,
   getCurrentTeacher,
@@ -19,6 +21,8 @@ import {
   LogOut,
   Plus,
   Search,
+  User,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -31,19 +35,17 @@ const Dashboard = () => {
   const [showPollDialog, setShowPollDialog] = useState(false);
   const navigate = useNavigate();
 
+  // Redirect to login if no teacher is present
   useEffect(() => {
     const currentTeacher = getCurrentTeacher();
     if (!currentTeacher) {
       navigate("/login");
       return;
     }
-    setTeacher(currentTeacher);
-    loadLectures(currentTeacher.id);
-  }, [navigate]);
+  }, [teacher, navigate]);
 
-  const loadLectures = (teacherId) => {
-    const teacherLectures = getLecturesByTeacher(teacherId);
-    setLectures(teacherLectures);
+  const refreshLectures = (teacherId) => {
+    setLectures(getLecturesByTeacher(teacherId));
   };
 
   const handleLogout = () => {
@@ -54,12 +56,12 @@ const Dashboard = () => {
 
   const handleLectureCreated = () => {
     if (teacher) {
-      loadLectures(teacher.id);
+      refreshLectures(teacher.id);
     }
     setIsCreateOpen(false);
   };
 
-  if (!teacher) return null;
+  
 
   const filteredLectures = lectures.filter(
     (lecture) =>
@@ -87,56 +89,85 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b bg-card/50 backdrop-blur-base sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
               <GraduationCap className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-foreground">LecturePulse</h1>
-              <p className="text-xs text-muted-foreground">Welcome, {teacher.name}</p>
+              <h1 className="text-2xl font-bold text-foreground">LecturePulse</h1>
+              <p className="text-base text-muted-foreground">Welcome, {teacher.name}</p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="ml-auto sm:ml-0">
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
+          <div className="flex items-center gap-2 ml-auto sm:ml-0">
+  
+  {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                aria-label="Toggle Theme"
+                className="
+                  w-10 h-10 rounded-full
+                  flex items-center justify-center
+                  border border-border/50
+                  bg-[#00C2C5]/20
+                  hover:bg-[#00C2C5]/30
+                  transition-all duration-300
+                  hover:scale-105
+                "
+              >
+                {theme === "dark" ? (
+                  <Sun className="w-4 h-4 text-foreground" />
+                ) : (
+                  <Moon className="w-4 h-4 text-foreground" />
+                )}
+              </button>
+
+              <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
+                <User className="w-4 h-4 mr-2" />
+                Profile
+              </Button>
+
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-none">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+            <CardContent className="p-8 flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
                 <BookOpen className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{lectures.length}</p>
-                <p className="text-sm text-muted-foreground">Total Lectures</p>
+                <p className="text-3xl font-bold text-foreground">{lectures.length}</p>
+                <p className="text-base text-muted-foreground">Total Lectures</p>
               </div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-green-500/5 to-green-500/10 border-none">
-            <CardContent className="p-6 flex items-center gap-4">
+            <CardContent className="p-8 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
                 <BarChart3 className="w-6 h-6 text-green-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">{activeLectures.length}</p>
-                <p className="text-sm text-muted-foreground">Active Sessions</p>
+                <p className="text-base text-muted-foreground">Active Sessions</p>
               </div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-blue-500/5 to-blue-500/10 border-none">
-            <CardContent className="p-6 flex items-center gap-4">
+            <CardContent className="p-8 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
                 <BarChart3 className="w-6 h-6 text-blue-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">{pastLectures.length}</p>
-                <p className="text-sm text-muted-foreground">Completed</p>
+                <p className="text-base text-muted-foreground">Completed</p>
               </div>
             </CardContent>
           </Card>
@@ -167,18 +198,69 @@ const Dashboard = () => {
         )}
 
         <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between mb-6">
-          <h2 className="text-xl font-semibold text-foreground">Your Lectures</h2>
-          <div className="flex gap-3">
-            <div className="relative">
+          <h2 className="text-3xl font-bold text-foreground">Your Lectures</h2>
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="relative flex-1 min-w-[220px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search lectures..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border rounded-md bg-background"
+                className="w-full pl-10 pr-4 py-3 text-base border rounded-md bg-background"
               />
             </div>
+            {/* Attendance Insights */}
+            <Card className="bg-gradient-to-br from-purple-500/5 to-purple-500/10 border-none">
+              <CardContent className="p-8 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                  <BarChart3 className="w-6 h-6 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{totalAttendance}</p>
+                  <p className="text-base text-muted-foreground">Total Attendance</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-indigo-500/5 to-indigo-500/10 border-none">
+              <CardContent className="p-8 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-indigo-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{participationRate}%</p>
+                  <p className="text-base text-muted-foreground">Participation Rate</p>
+                </div>
+              </CardContent>
+            </Card>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="border rounded-md px-3 py-2 bg-background"
+            >
+              <option value="all">All</option>
+              <option value="active">Active</option>
+              <option value="completed">Completed</option>
+            </select>
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="border rounded-md px-3 py-2 bg-background"
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+            </select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+                setSortOrder('newest');
+              }}
+            >
+              Clear Filters
+            </Button>
             <Button
               onClick={() => setIsCreateOpen(true)}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
@@ -197,24 +279,62 @@ const Dashboard = () => {
         </div>
 
         {lectures.length === 0 ? (
-          <Card className="text-center py-12 border-dashed">
-            <CardContent>
-              <h3 className="text-lg font-medium">No lectures yet</h3>
-              <p className="text-muted-foreground mt-2">Create your first lecture!</p>
-            </CardContent>
-          </Card>
-        ) : filteredLectures.length === 0 ? (
-          <Card className="text-center py-12 border-dashed">
-            <CardContent>
-              <h3 className="text-lg font-medium">No lectures found</h3>
-              <p className="text-muted-foreground mt-2">Try a different search term.</p>
-            </CardContent>
-          </Card>
+         <Card className="border-dashed border-2 border-muted">
+  <CardContent className="flex flex-col items-center justify-center py-20 px-6 text-center gap-6">
+    <div className="relative">
+      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-cyan-500/20 flex items-center justify-center ring-1 ring-emerald-500/20">
+        <BookOpen className="w-9 h-9 text-emerald-500" />
+      </div>
+      <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-md shadow-emerald-500/30">
+        <Sparkles className="w-3 h-3 text-white" />
+      </div>
+    </div>
+    <div className="space-y-2 max-w-sm">
+      <h3 className="text-xl font-semibold text-foreground">No lectures yet</h3>
+      <p className="text-base text-muted-foreground leading-relaxed">
+        Get started by creating your first lecture. Share a session code with
+        your students and collect real-time feedback instantly.
+      </p>
+    </div>
+    <Button
+      onClick={() => setIsCreateOpen(true)}
+      size="lg"
+      className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white hover:from-emerald-600 hover:to-cyan-600 shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:shadow-emerald-500/40 hover:-translate-y-0.5"
+    >
+      <Plus className="w-5 h-5 mr-2" />
+      Create Your First Lecture
+    </Button>
+    <p className="text-xs text-muted-foreground/60">
+      Students can join using a 6-digit session code — no signup required.
+    </p>
+  </CardContent>
+</Card>
+) : filteredLectures.length === 0 ? (
+<Card className="border-dashed border-2 border-muted">
+  <CardContent className="flex flex-col items-center justify-center py-16 px-6 text-center gap-4">
+    <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center">
+      <Search className="w-7 h-7 text-muted-foreground" />
+    </div>
+    <div className="space-y-1">
+      <h3 className="text-xl font-medium text-foreground">No lectures found</h3>
+      <p className="text-base text-muted-foreground">
+        No lectures match your current filters. Try adjusting your search or{" "}
+        <button
+          onClick={() => { setSearchTerm(''); setStatusFilter('all'); setSortOrder('newest'); }}
+          className="text-primary underline-offset-2 hover:underline focus:outline-none"
+        >
+          clear all filters
+        </button>
+        .
+      </p>
+    </div>
+  </CardContent>
+</Card>
         ) : (
           <div className="space-y-6">
             {activeLectures.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
+                <h3 className="text-base font-semibold text-muted-foreground mb-4 uppercase tracking-wide">
                   Active Sessions
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -222,7 +342,7 @@ const Dashboard = () => {
                     <LectureCard
                       key={lecture.id}
                       lecture={lecture}
-                      onUpdate={() => loadLectures(teacher.id)}
+                      onUpdate={() => refreshLectures(teacher.id)}
                     />
                   ))}
                 </div>
@@ -230,7 +350,7 @@ const Dashboard = () => {
             )}
             {pastLectures.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
+                <h3 className="text-base font-medium text-muted-foreground mb-3 uppercase tracking-wide">
                   Past Lectures
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -238,7 +358,7 @@ const Dashboard = () => {
                     <LectureCard
                       key={lecture.id}
                       lecture={lecture}
-                      onUpdate={() => loadLectures(teacher.id)}
+                      onUpdate={() => refreshLectures(teacher.id)}
                     />
                   ))}
                 </div>
@@ -249,7 +369,7 @@ const Dashboard = () => {
 
         {polls.length > 0 && (
           <div className="mt-6 space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
+            <h3 className="text-base font-medium text-muted-foreground mb-3 uppercase tracking-wide">
               Active Polls
             </h3>
             {polls.map((poll) => (

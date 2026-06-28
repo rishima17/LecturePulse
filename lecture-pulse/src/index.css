@@ -70,6 +70,14 @@
     --color-ring: hsl(var(--ring));
     --color-chart-understanding: hsl(217.2 91.2% 59.8%);
     --color-chart-attention: hsl(270 50% 40%);
+
+    --text-xs: 0.875rem;      /* 14px */
+    --text-sm: 1rem;          /* 16px */
+    --text-base: 1.125rem;    /* 18px */
+    --text-lg: 1.25rem;       /* 20px */
+    --text-xl: 1.5rem;        /* 24px */
+    --text-2xl: 2rem;         /* 32px */
+    --text-3xl: 2.5rem;       /* 40px */
 }
 
 @layer utilities {
@@ -85,9 +93,32 @@
         @apply bg-gradient-to-br from-slate-900 to-slate-800;
     }
 }
+
 @layer base {
     body {
         background-color: hsl(var(--background));
         color: hsl(var(--foreground));
+        font-size: 17px;
+        line-height: 1.6;
+    }
+
+    h1 {
+        font-size: clamp(2.25rem, 5vw, 3.5rem);
+        font-weight: 700;
+    }
+
+    h2 {
+        font-size: clamp(1.75rem, 4vw, 2.75rem);
+        font-weight: 700;
+    }
+
+    h3 {
+        font-size: clamp(1.4rem, 3vw, 2rem);
+        font-weight: 600;
+    }
+
+    p {
+        font-size: 1.125rem;
+        line-height: 1.8;
     }
 }

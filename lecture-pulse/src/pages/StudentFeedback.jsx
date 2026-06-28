@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useTheme } from "../context/ThemeContext";
+import { Sun, Moon } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -25,6 +27,13 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import {
+  getOrCreateStudentId,
+  hasStudentSubmitted,
+  submitFeedback as saveFeedbackToStorage,
+  addAttendance
+} from "@/utils/storage";
+import { emitFeedback } from "@/lib/socket";
 
 const UnderstandingOption = ({ value, icon: Icon, label, color, understanding, setUnderstanding }) => (
   <motion.button
@@ -45,7 +54,12 @@ const UnderstandingOption = ({ value, icon: Icon, label, color, understanding, s
 );
 
 export default function Student() {
-  const [step, setStep] = useState("code"); // code, feedback, success
+  const { theme, toggleTheme } = useTheme();
+  // Attendance fields
+  const [attendeeName, setAttendeeName] = useState("");
+  const [attendeeRoll, setAttendeeRoll] = useState("");
+  const [attendeeStudentId, setAttendeeStudentId] = useState("");
+  const [step, setStep] = useState("code"); // code, attendance, feedback, success
   const [sessionCode, setSessionCode] = useState("");
   const [activeSession, setActiveSession] = useState(null);
   const [error, setError] = useState("");
@@ -78,7 +92,8 @@ export default function Student() {
 
       if (session) {
         setActiveSession(session);
-        setStep("feedback");
+        // Proceed to optional attendance step
+        setStep("attendance");
       } else {
         toast.error("Invalid or inactive session code.");
       }
@@ -86,52 +101,52 @@ export default function Student() {
     }, 600);
   };
 
-  const submitFeedback = (e) => {
+  const handleFeedbackSubmit = (e) => {
     e.preventDefault();
     if (!understanding || !attention) {
       toast.error("Please choose your Understanding and Attention levels.");
       return;
     }
     setLoading(true);
-    const submittedSessions = JSON.parse(
-      localStorage.getItem("lecturePulse_submitted") || "[]"
-    );
 
-    if (submittedSessions.includes(activeSession.id)) {
+    const studentId = getOrCreateStudentId();
+    
+    // Check if already submitted using the robust storage check
+    if (hasStudentSubmitted(activeSession.id, studentId)) {
       toast.error("You have already submitted feedback for this session.");
       setLoading(false);
       return;
     }
 
-    const feedback = {
-      id: crypto.randomUUID(),
+    const feedbackData = {
       lectureId: activeSession.id,
+      studentId,
       understanding,
       attention,
       confusionTime,
       comment,
-      timestamp: new Date().toISOString(),
     };
 
-    const allFeedback = JSON.parse(
-      localStorage.getItem("lecturePulse_feedback") || "[]",
-    );
-    localStorage.setItem(
-      "lecturePulse_feedback",
-      JSON.stringify([...allFeedback, feedback]),
-    );
-    localStorage.setItem(
-      "lecturePulse_submitted",
-      JSON.stringify([
-        ...submittedSessions,
-        activeSession.id
-      ])
-    );
+    try {
+      const savedFeedback = saveFeedbackToStorage(feedbackData);
+      
+      // Emit feedback via WebSocket for real-time synchronization
+      emitFeedback(activeSession.id, savedFeedback);
+      
+      window.dispatchEvent(new CustomEvent("feedback-updated", {
+        detail: {
+          lectureId: activeSession.id,
+        },
+      }));
 
-    setTimeout(() => {
-      setStep("success");
+      setTimeout(() => {
+        setStep("success");
+        setLoading(false);
+      }, 800);
+    } catch (err) {
+      toast.error(err.message || "Failed to submit feedback");
       setLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -143,6 +158,21 @@ export default function Student() {
           Back to Home
         </Button>
       </Link>
+
+      <div className="absolute top-4 right-4 md:top-8 md:right-8 z-50">
+        <button
+          onClick={toggleTheme}
+          className="w-11 h-11 rounded-full flex items-center justify-center
+          border border-border/50 bg-[#00C2C5]/20 hover:bg-[#00C2C5]/30
+          transition-all duration-300 hover:scale-105"
+        >
+          {theme === "dark" ? (
+            <Sun className="w-5 h-5 text-foreground" />
+          ) : (
+            <Moon className="w-5 h-5 text-foreground" />
+          )}
+        </button>
+      </div>
 
       {/* Background Decor */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -156,7 +186,7 @@ export default function Student() {
         />
       </div>
 
-      <div className="w-full max-w-lg relative z-10">
+      <div className="w-full max-w-2xl relative z-10">
         {/* Navigation & Brand */}
         <motion.div
           initial={{ y: -20, opacity: 0 }}
@@ -186,8 +216,8 @@ export default function Student() {
             >
               <Card className="border-border/50 shadow-2xl backdrop-blur-xl bg-card/60">
                 <CardHeader className="text-center pb-2">
-                  <CardTitle className="text-2xl">Join Session</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-3xl md:text-4xl">Join Session</CardTitle>
+                  <CardDescription className="text-base md:text-lg">
                     Enter the 6-digit code provided by your teacher
                   </CardDescription>
                 </CardHeader>
@@ -200,7 +230,6 @@ export default function Student() {
                         placeholder="CODE"
                         maxLength={6}
                         value={sessionCode}
-                        // onChange={(e) => setSessionCode(e.target.value)}
                         onChange={(e) => {
                           const value = e.target.value
                             .toUpperCase()
@@ -240,6 +269,61 @@ export default function Student() {
             </motion.div>
           )}
 
+          {step === "attendance" && (
+            <motion.div
+              key="attendance"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <Card className="border-border/50 shadow-2xl backdrop-blur-xl bg-card/80">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-2xl md:text-3xl">Attendance Information (Optional)</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Input
+                    placeholder="Name (optional)"
+                    value={attendeeName}
+                    onChange={(e) => setAttendeeName(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Roll Number (optional)"
+                    value={attendeeRoll}
+                    onChange={(e) => setAttendeeRoll(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Student ID (optional)"
+                    value={attendeeStudentId}
+                    onChange={(e) => setAttendeeStudentId(e.target.value)}
+                  />
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    onClick={() => {
+                      // Generate attendance record and persist
+                      const generatedId = crypto.randomUUID();
+                      const entry = {
+                        attendeeId: generatedId,
+                        name: attendeeName.trim() || null,
+                        rollNumber: attendeeRoll.trim() || null,
+                        studentId: attendeeStudentId.trim() || null,
+                        joinedAt: new Date().toISOString(),
+                        anonymous: !attendeeName && !attendeeRoll && !attendeeStudentId,
+                      };
+                      // Persist via storage util
+                      addAttendance(activeSession.id, entry.studentId);
+                      // Move to feedback step
+                      setStep("feedback");
+                    }}
+                    disabled={loading}
+                  >
+                    Continue to Feedback
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
           {step === "feedback" && (
             <motion.div
               key="feedback"
@@ -252,7 +336,7 @@ export default function Student() {
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle className="text-xl">
+                      <CardTitle className="text-2xl md:text-3xl">
                         {activeSession?.topic}
                       </CardTitle>
                       <CardDescription className="flex items-center gap-2 mt-1">
@@ -268,7 +352,7 @@ export default function Student() {
                 <CardContent className="space-y-8">
                   {/* Understanding */}
                   <div className="space-y-4">
-                    <label className="text-sm font-medium flex items-center gap-2 text-foreground/80">
+                    <label className="text-base md:text-lg font-medium flex items-center gap-2 text-foreground/80">
                       <Brain className="w-4 h-4 text-primary" />
                       How well are you understanding?
                     </label>
@@ -370,7 +454,7 @@ export default function Student() {
                   )}
 
                   <Button
-                    onClick={submitFeedback}
+                    onClick={handleFeedbackSubmit}
                     size="lg"
                     className="w-full h-12 text-lg bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
                     disabled={loading}

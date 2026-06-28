@@ -1,34 +1,37 @@
-# LecturePulse 🎓
-
 <div align="center">
 
-[![SSOC 2026](https://img.shields.io/badge/SSOC-2026-orange.svg?style=for-the-badge&logo=github)](https://github.com/rishima17/LecturePulse)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg?style=for-the-badge&logo=git)](https://github.com/rishima17/LecturePulse/pulls)
-[![React 19](https://img.shields.io/badge/React-19-blue.svg?style=for-the-badge&logo=react)](https://react.dev/)
-[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8.svg?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
-
-**Real-time student feedback application designed to bridge the communication gap between educators and students during live lectures.**
-
-[Live Demo](https://lecturepulse.vercel.app/) • [Report Bug](https://github.com/rishima17/LecturePulse/issues) • [Request Feature](https://github.com/rishima17/LecturePulse/issues)
+  # LecturePulse 🎓
+  
+  [![SSOC 2026](https://img.shields.io/badge/SSOC-2026-orange.svg?style=for-the-badge&logo=github)](https://github.com/rishima17/LecturePulse)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+  [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg?style=for-the-badge&logo=git)](https://github.com/rishima17/LecturePulse/pulls)
+  [![React 19](https://img.shields.io/badge/React-19-blue.svg?style=for-the-badge&logo=react)](https://react.dev/)
+  [![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8.svg?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+  
+  ### Real-time student feedback application designed to bridge the communication gap between educators and students during live lectures.
+  
+ **[Live Demo](https://lecturepulse.vercel.app/) | 
+  [Report Bug](https://github.com/rishima17/LecturePulse/issues) | 
+  [Request Feature](https://github.com/rishima17/LecturePulse/issues)**
 
 ---
 
 </div>
 
-## 📖 Table of Contents
+## 📖 Table Of Contents
 
-- [About LecturePulse](#-about-lecturepulse)
-- [Core Features](#-core-features)
-- [Tech Stack](#%EF%B8%8F-tech-stack)
-- [System Architecture](#%EF%B8%8F-system-architecture)
-- [Folder Structure](#-folder-structure)
-- [Getting Started](#-getting-started)
-- [Usage Guide](#-usage-guide)
-- [SSOC Contribution Guidelines](#%EF%B8%8F-ssoc-contribution-guidelines)
-- [Roadmap (Contributor Opportunities)](#-roadmap-contributor-opportunities)
-- [License](#-license)
-- [Contact](#-contact)
+1. [💡 About LecturePulse](#-about-lecturepulse)
+2. [🎯 Core Features](#-core-features)
+3. [🛠️ Tech Stack](#️-tech-stack)
+4. [🖧 System Architecture](#-system-architecture)
+5. [📂 Folder Structure](#-folder-structure)
+6. [🚀 How to Run](#-how-to-run)
+7. [🔧 Usage Guide](#-usage-guide)
+8. [🤝 SSOC Contribution Guidelines](#-ssoc-contribution-guidelines)
+9. [💖 Contributors](#-contributors)
+10. [⭐ Project Support](#-project-support)
+11. [📄 License](#-license)
+12. [✉️ Contact](#️-contact)
 
 ---
 
@@ -42,7 +45,7 @@ In large classroom settings or online lectures, a common challenge is the feedba
 
 ---
 
-## ✨ Core Features
+## 🎯 Core Features
 
 ### 👨‍🏫 Teacher Suite
 - **Interactive Dashboard**: Instantly spawn new lectures, generate custom 6-digit session codes, and keep track of lecture history.
@@ -71,18 +74,18 @@ LecturePulse is built using a modern, performant, and scale-friendly frontend te
 
 | Technology | Purpose | Key Benefits |
 | :--- | :--- | :--- |
-| **React 19** | Core UI Library | Declarative component structure, state management, and optimized rendering. |
-| **Vite 7** | Build Tool & Bundler | Lightning-fast Hot Module Replacement (HMR) and optimized build processes. |
-| **Tailwind CSS v4** | UI Styling | Modern CSS styling, built-in custom variables, and ultra-fast compilation. |
-| **Framer Motion 12** | Animations | Smooth page transitions, hover states, and dynamic feedback animations. |
-| **Recharts 3** | Data Visualization | Highly customizable SVG-based responsive charts for student understanding timelines. |
-| **React Router DOM 7** | Client-Side Routing | Smooth and decoupled route management (`/dashboard`, `/student`, `/analytics`). |
-| **Sonner** | Notification UI | Beautiful, lightweight toast system for real-time success and warning notifications. |
-| **Lucide React** | Icon Pack | Consistent, beautiful vector iconography. |
+| ![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB) **React 19**     | Core UI Library | Declarative component structure, state management, and optimized rendering. |
+| ![Vite](https://img.shields.io/badge/Vite_7-646CFF?style=flat-square&logo=vite&logoColor=white) **Vite 7**     | Build Tool & Bundler | Lightning-fast Hot Module Replacement (HMR) and optimized build processes. |
+| ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white) **Tailwind CSS v4**     | UI Styling | Modern CSS styling, built-in custom variables, and ultra-fast compilation. |
+| ![Framer Motion](https://img.shields.io/badge/Framer_Motion_12-0055FF?style=flat-square&logo=framer&logoColor=white) **Framer Motion 12**     | Animations | Smooth page transitions, hover states, and dynamic feedback animations. |
+| ![Recharts](https://img.shields.io/badge/Recharts_3-22B5BF?style=flat-square&logo=chartdotjs&logoColor=white) **Recharts 3**     | Data Visualization | Highly customizable SVG-based responsive charts for student understanding timelines. |
+| ![React Router](https://img.shields.io/badge/React_Router_7-CA4245?style=flat-square&logo=reactrouter&logoColor=white) **React Router DOM 7**     | Client-Side Routing | Smooth and decoupled route management (`/dashboard`, `/student`, `/analytics`). |
+| ![Sonner](https://img.shields.io/badge/Sonner-000000?style=flat-square&logo=vercel&logoColor=white) **Sonner**     | Notification UI | Beautiful, lightweight toast system for real-time success and warning notifications. |
+| ![Lucide React](https://img.shields.io/badge/Lucide_React-F59E0B?style=flat-square&logo=lucide&logoColor=white) **Lucide React**     | Icon Pack | Consistent, beautiful vector iconography. |
 
 ---
 
-## ⚙️ System Architecture
+## 🖧 System Architecture
 
 Currently, LecturePulse runs on a mock-integrated architecture utilizing `localStorage` to simulate backend persistence. This makes setup incredibly lightweight for frontend contributors.
 
@@ -146,7 +149,7 @@ lecture-pulse/
 
 ---
 
-## 🚀 Getting Started
+## 🚀 How to Run
 
 To get a local copy up and running, follow these steps:
 
@@ -192,7 +195,7 @@ To get a local copy up and running, follow these steps:
 
 ---
 
-## 🚦 Usage Guide
+## 🔧 Usage Guide
 
 ### 🏫 Teacher Flow
 1. Open the app and navigate to **Get Started** or `/login`.
@@ -245,9 +248,9 @@ We love contributions! Whether you're participating through **Social Summer of C
 
 ---
 
-### 💖 Contributors
+## 💖 Contributors
 
-Thanks to all the amazing people who contribute to **LecturePulse** 🚀
+Thanks a lot to all the amazing people who contribute to **LecturePulse**! 🚀
 
 <p align="center">
   <a href="https://github.com/rishima17/LecturePulse/graphs/contributors">
@@ -257,7 +260,7 @@ Thanks to all the amazing people who contribute to **LecturePulse** 🚀
 
 ---
 
-### ⭐ Project Support
+## ⭐ Project Support
 
 <p align="center">
   <a href="https://github.com/rishima17/LecturePulse/stargazers">
@@ -273,7 +276,7 @@ Thanks to all the amazing people who contribute to **LecturePulse** 🚀
 
 ## 📄 License
 
-Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
+This project is distributed under the MIT License, and is free to copy, modify, and merge. See [LICENSE](LICENSE) for more information.
 
 ---
 
@@ -284,6 +287,9 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 * **Join the Conversation**: Open an issue or suggest a feature through Github Discussion boards!
 
 ---
+
 <div align="center">
-  Made with ❤️ for the open-source community. Happy Coding!
+  
+  ### Made with ❤️ for the open-source community. Happy Coding!
+  
 </div>

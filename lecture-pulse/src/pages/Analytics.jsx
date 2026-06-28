@@ -10,9 +10,12 @@ import AttentionChart from '@/components/charts/AttentionChart';
 import ConfusionChart from '@/components/charts/ConfusionChart';
 import FeedbackTimeline from '@/components/charts/FeedbackTimeline';
 import AISummaryCard from '@/components/AISummaryCard';
+import AttendanceParticipationChart from '@/components/charts/AttendanceParticipationChart';
 import { generateLecturePDF } from "@/utils/pdfReport";
+import { generateLectureCSV } from "@/utils/csvReport";
 import { useRef } from "react";
 import html2canvas from "html2canvas";
+import { socket, joinLectureRoom } from "@/lib/socket";
 
 const Analytics = () => {
   const { sessionId } = useParams();
@@ -36,6 +39,9 @@ const Analytics = () => {
   };
 
   const [feedback, setFeedback] = useState([]);
+  const totalAttendance = lecture?.attendance?.length || 0;
+  const participationRate = totalAttendance ? Math.round((totalFeedback / totalAttendance) * 100) : 0;
+  const totalFeedback = feedback.length;
   const loadData = useCallback(async () => {
     if (!sessionId) return;
     
@@ -67,11 +73,65 @@ const Analytics = () => {
     setAnalytics(calculatedAnalytics);
   }, [sessionId, navigate]);
 
-  useEffect(() => {
+useEffect(() => {
     const fetchData = async () => {
       await loadData();
     };
     fetchData();
+
+    // Auto-refresh every 10 seconds
+    const interval = setInterval(() => {
+      loadData();
+    }, 10000);
+
+    // Listen for storage changes from other tabs
+    const handleStorageChange = (e) => {
+      if (e.key === "lecturePulse_feedback") {
+        loadData();
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [loadData]);
+
+  useEffect(() => {
+    if (sessionId && lecture) {
+      joinLectureRoom(sessionId, lecture.code);
+      
+      const handleRealtimeFeedback = (newFeedback) => {
+        console.log("Real-time feedback received:", newFeedback);
+        loadData(); // Refresh data from storage
+      };
+
+      socket.on('feedback-updated', handleRealtimeFeedback);
+
+      return () => {
+        socket.off('feedback-updated', handleRealtimeFeedback);
+      };
+    }
+  }, [sessionId, lecture, loadData]);
+
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === 'lecturePulse_feedback') {
+        loadData();
+      }
+    };
+
+    const onFeedbackUpdated = () => {
+      loadData();
+    };
+
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('feedback-updated', onFeedbackUpdated);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('feedback-updated', onFeedbackUpdated);
+    };
   }, [loadData]);
 
   if (!lecture || !analytics) {
@@ -108,6 +168,20 @@ const Analytics = () => {
       },
     });
   };
+
+  const handleDownloadCSV = () => {
+    const teacher = getCurrentTeacher();
+
+    generateLectureCSV({
+      lecture,
+      analytics: {
+        ...analytics,
+        effectiveness,
+      },
+      teacher,
+      feedback,
+    });
+  };
   return (
     <div className="min-h-screen bg-background pb-12">
       {/* Header */}
@@ -133,6 +207,9 @@ const Analytics = () => {
               <Button variant="outline" size="sm" onClick={loadData}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownloadCSV}>
+                Export CSV
               </Button>
               <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
                 Download PDF Report
@@ -199,6 +276,30 @@ const Analytics = () => {
                 </CardContent>
               </Card>
             </div>
+            {/* Attendance & Participation Card */}
+            <Card className="bg-gradient-to-br from-purple-500/5 to-purple-500/10 border-none">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <BarChart3 className="w-6 h-6 text-purple-600" />
+                  <h3 className="text-lg font-medium text-foreground">Attendance Overview</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-foreground">{totalAttendance}</p>
+                    <p className="text-sm text-muted-foreground">Total Attendance</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-foreground">{totalFeedback}</p>
+                    <p className="text-sm text-muted-foreground">Feedback Submissions</p>
+                  </div>
+                  <div className="col-span-2 text-center">
+                    <p className="text-2xl font-bold text-foreground">{participationRate}%</p>
+                    <p className="text-sm text-muted-foreground">Participation Rate</p>
+                  </div>
+                </div>
+                <AttendanceParticipationChart attendance={totalAttendance} feedback={totalFeedback} />
+              </CardContent>
+            </Card>
 
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
