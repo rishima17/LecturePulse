@@ -72,7 +72,7 @@ const LectureCard = ({ lecture, onUpdate }) => {
   };
 
   return (
-    <Card className="rounded-xl border shadow-sm hover:shadow-md transition-all duration-300 bg-white group overflow-hidden">
+    <Card className="rounded-xl border shadow-sm hover:shadow-md transition-all duration-300 group overflow-hidden">
       <CardContent className="p-5 flex flex-col h-full gap-4">
         {/* Header */}
         <div className="flex justify-between items-start">
@@ -147,7 +147,7 @@ const LectureCard = ({ lecture, onUpdate }) => {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="bg-white p-3 rounded-lg shadow-sm">
+            <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
               <QRCodeSVG
                 id={`qr-${lecture.id}`}
                 value={joinUrl}
@@ -223,10 +223,11 @@ const LectureCard = ({ lecture, onUpdate }) => {
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
+
         {showDeleteModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white rounded-xl p-6 shadow-lg max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold mb-2">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold text-foreground mb-2">
                 Delete Lecture?
               </h3>
 
@@ -257,4 +258,5 @@ const LectureCard = ({ lecture, onUpdate }) => {
     </Card>
   );
 };
+
 export default LectureCard;
