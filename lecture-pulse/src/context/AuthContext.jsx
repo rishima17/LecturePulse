@@ -1,6 +1,5 @@
 import { createContext, useContext, useState } from "react";
 import { getCurrentTeacher } from "@/utils/storage";
-import bcrypt from "bcryptjs";
 
 const AuthContext = createContext();
 
@@ -9,6 +8,16 @@ export function AuthProvider({ children }) {
     return getCurrentTeacher();
   });
   const [loading] = useState(false);
+
+  const hashPassword = async (password) => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+
+    return Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  };
 
   const login = async (teacherId, password) => {
     // Hackathon Logic: Retrieve from array of teachers or single object?
@@ -21,19 +30,13 @@ export function AuthProvider({ children }) {
 
     let isValidPassword = false;
     if (user) {
-      const isHashed =
-        typeof user.password === "string" &&
-        user.password.startsWith("$2");
-      if (isHashed) {
-        isValidPassword = await bcrypt.compare(
-          password,
-          user.password
-        );
+      const looksHashed = /^[a-f0-9]{64}$/i.test(user.password);
+      if (looksHashed) {
+        isValidPassword = user.password === await hashPassword(password);
       } else {
         isValidPassword = user.password === password;
-        // Auto-migrate plaintext passwords
         if (isValidPassword) {
-          user.password = await bcrypt.hash(password, 10);
+          user.password = await hashPassword(password);
           localStorage.setItem(
             "lecturePulse_teachers_db",
             JSON.stringify(teachers)
@@ -67,13 +70,9 @@ export function AuthProvider({ children }) {
           return { success: false, message: "Teacher ID already exists." };
       }
 
-      const hashedPassword = await bcrypt.hash(
-        password,
-        10
-      );
       teachers[teacherId] = {
         name,
-        password: hashedPassword,
+        password: await hashPassword(password),
       };
       localStorage.setItem("lecturePulse_teachers_db", JSON.stringify(teachers));
       
