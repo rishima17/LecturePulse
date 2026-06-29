@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from "react";
+import emailjs from "@emailjs/browser";
 import { getCurrentTeacher } from "@/utils/storage";
 
 const AuthContext = createContext();
@@ -95,7 +96,18 @@ export function AuthProvider({ children }) {
 
   const OTP_EXPIRY_TIME = 5 * 60 * 1000; // 5 minutes
 
-  const sendOTP = (email) => {
+  const sendOTP = async (email) => {
+    const emailJsServiceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const emailJsTemplateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+    const emailJsPublicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+    if (!emailJsServiceId || !emailJsTemplateId || !emailJsPublicKey) {
+      return {
+        success: false,
+        message: "Email service is not configured. Please add the EmailJS environment variables.",
+      };
+    }
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     const otpData = {
@@ -103,12 +115,33 @@ export function AuthProvider({ children }) {
       timestamp: Date.now(),
     };
 
-    localStorage.setItem(
-      `lecturePulse_otp_${email}`,
-      JSON.stringify(otpData)
-    );
+    try {
+      await emailjs.send(
+        emailJsServiceId,
+        emailJsTemplateId,
+        {
+          to_email: email,
+          otp_code: otp,
+          app_name: "LecturePulse",
+        },
+        {
+          publicKey: emailJsPublicKey,
+        }
+      );
 
-    return otp;
+      localStorage.setItem(
+        `lecturePulse_otp_${email}`,
+        JSON.stringify(otpData)
+      );
+
+      return { success: true };
+    } catch (error) {
+      console.error("Failed to send OTP email:", error);
+      return {
+        success: false,
+        message: "Could not send the verification code. Please try again.",
+      };
+    }
   };
 
   const verifyOTP = (email, otp) => {

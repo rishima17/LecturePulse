@@ -16,25 +16,32 @@ export default function Profile() {
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState(1); // 1: Enter Email, 2: Enter OTP
   const [isEditing, setIsEditing] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
 
   if (!teacher) {
     navigate("/login");
     return null;
   }
 
-  const handleSendOTP = (e) => {
+  const handleSendOTP = async (e) => {
     e.preventDefault();
     if (!email) {
       toast.error("Please enter an email address");
       return;
     }
-    const generatedOtp = sendOTP(email);
-    setStep(2);
-    // Simulating sending email
-    toast.success("Verification code sent!", {
-      description: `For hackathon demo, your code is: ${generatedOtp}`,
-      duration: 10000,
-    });
+
+    setIsSendingOtp(true);
+    const result = await sendOTP(email);
+    setIsSendingOtp(false);
+
+    if (result.success) {
+      setStep(2);
+      toast.success("Verification code sent!", {
+        description: "Please check your inbox for the 6-digit code.",
+      });
+    } else {
+      toast.error(result.message);
+    }
   };
 
   const handleVerifyOTP = (e) => {
@@ -165,8 +172,8 @@ export default function Profile() {
                         </div>
                       </div>
                       <div className="flex gap-3">
-                        <Button type="submit" className="flex-1 sm:flex-none">
-                          Send Verification Code
+                        <Button type="submit" className="flex-1 sm:flex-none" disabled={isSendingOtp}>
+                          {isSendingOtp ? "Sending..." : "Send Verification Code"}
                         </Button>
                         {isEditing && (
                           <Button 
