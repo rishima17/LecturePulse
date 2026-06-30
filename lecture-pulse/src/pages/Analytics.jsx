@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw } from 
 import UnderstandingChart from '@/components/charts/UnderstandingChart';
 import AttentionChart from '@/components/charts/AttentionChart';
 import ConfusionChart from '@/components/charts/ConfusionChart';
+import LectureReplayTimeline from "@/components/charts/LectureReplayTimeline";
 import FeedbackTimeline from '@/components/charts/FeedbackTimeline';
 import AISummaryCard from '@/components/AISummaryCard';
 import AttendanceParticipationChart from '@/components/charts/AttendanceParticipationChart';
@@ -16,6 +17,8 @@ import { generateLectureCSV } from "@/utils/csvReport";
 import { useRef } from "react";
 import html2canvas from "html2canvas";
 import { socket, joinLectureRoom } from "@/lib/socket";
+import { clusterComments } from "@/utils/doubtClustering";
+import DoubtClusterCard from "@/components/DoubtClusterCard";
 
 const Analytics = () => {
   const { sessionId } = useParams();
@@ -39,9 +42,14 @@ const Analytics = () => {
   };
 
   const [feedback, setFeedback] = useState([]);
-  const totalAttendance = lecture?.attendance?.length || 0;
-  const participationRate = totalAttendance ? Math.round((totalFeedback / totalAttendance) * 100) : 0;
-  const totalFeedback = feedback.length;
+const clusters = useMemo(() => {
+    const comments = feedback.map((f) => f.comment).filter(Boolean);
+    if (!comments.length) return [];
+    return clusterComments(comments);
+  }, [feedback]);
+const totalFeedback = feedback.length;
+const totalAttendance = lecture?.attendance?.length || 0;
+const participationRate = totalAttendance ? Math.round((totalFeedback / totalAttendance) * 100) : 0;
   const loadData = useCallback(async () => {
     if (!sessionId) return;
     
@@ -133,6 +141,8 @@ useEffect(() => {
       window.removeEventListener('feedback-updated', onFeedbackUpdated);
     };
   }, [loadData]);
+
+  // Clusters are computed via useMemo above
 
   if (!lecture || !analytics) {
     return (
@@ -301,6 +311,15 @@ useEffect(() => {
               </CardContent>
             </Card>
 
+            {/* AI Doubt Clustering Dashboard */}
+            {clusters.length > 0 && (
+              <div className="mt-8 space-y-4">
+                <h2 className="text-2xl font-bold text-foreground mb-4">AI Doubt Clustering Dashboard</h2>
+                {clusters.map((cluster, idx) => (
+                  <DoubtClusterCard key={idx} cluster={cluster} />
+                ))}
+              </div>
+            )}
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <Card>
@@ -334,18 +353,22 @@ useEffect(() => {
                 </CardContent>
               </Card>
             </div>
-            {/* Feedback Timeline */}
-<Card>
-  <CardHeader>
-    <CardTitle className="text-base flex items-center gap-2">
-      <TrendingUp className="w-4 h-4 text-primary" />
-      Engagement Timeline
-    </CardTitle>
-  </CardHeader>
-  <CardContent>
-    <FeedbackTimeline data={analytics.timeline} />
-  </CardContent>
-</Card>
+            {/* Replay Timeline or static Feedback Timeline */}
+            {lecture?.status === 'completed' ? (
+              <LectureReplayTimeline lectureId={sessionId} />
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-primary" />
+                    Engagement Timeline
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <FeedbackTimeline data={analytics.timeline} />
+                </CardContent>
+              </Card>
+            )}
 
             {/* Insights & Suggestions */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -4,12 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTheme } from "@/context/ThemeContext";
 import { Sun, Moon } from "lucide-react";
-import {
-  clearCurrentTeacher,
-  getCurrentTeacher,
-  getLecturesByTeacher,
-  getFeedbackByLecture,
-} from "@/utils/storage";
+import { useAuth } from "@/context/AuthContext";
+import { getLecturesByTeacher, getFeedbackByLecture } from "@/utils/storage";
 import CreateLectureDialog from "@/components/CreateLectureDialog";
 import LectureCard from "@/components/LectureCard";
 import PollCard from "@/components/PollCard";
@@ -27,9 +23,23 @@ import {
 import { toast } from "sonner";
 
 const Dashboard = () => {
-  const [teacher, setTeacher] = useState(null);
+  const { theme, toggleTheme } = useTheme();
+  const { teacher, logout } = useAuth();
   const [lectures, setLectures] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+    const totalAttendance = useMemo(() => {
+    return lectures.reduce((sum, lecture) => sum + (lecture.attendance?.length || 0), 0);
+  }, [lectures]);
+
+  const totalFeedback = useMemo(() => {
+    return lectures.reduce((sum, lecture) => sum + getFeedbackByLecture(lecture.id).length, 0);
+  }, [lectures]);
+
+  const participationRate = useMemo(() => {
+    return totalAttendance ? Math.round((totalFeedback / totalAttendance) * 100) : 0;
+  }, [totalAttendance, totalFeedback]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortOrder, setSortOrder] = useState('newest');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [polls, setPolls] = useState([]);
   const [showPollDialog, setShowPollDialog] = useState(false);
@@ -44,14 +54,25 @@ const Dashboard = () => {
     }
   }, [teacher, navigate]);
 
+  // Load lectures when teacher is present
+  useEffect(() => {
+    if (teacher) {
+      const fetchLectures = async () => {
+        const data = getLecturesByTeacher(teacher.id);
+        setLectures(data);
+      };
+      fetchLectures();
+    }
+  }, [teacher]);
+
   const refreshLectures = (teacherId) => {
     setLectures(getLecturesByTeacher(teacherId));
   };
 
   const handleLogout = () => {
-    clearCurrentTeacher();
-    toast.success("Logged out successfully");
-    navigate("/login");
+    logout();
+    toast.success('Logged out successfully');
+    navigate('/login');
   };
 
   const handleLectureCreated = () => {
@@ -83,9 +104,13 @@ const Dashboard = () => {
       const latestA = feedbackA[feedbackA.length - 1]?.submittedAt || "";
       const latestB = feedbackB[feedbackB.length - 1]?.submittedAt || "";
 
-      return new Date(latestB) - new Date(latestA);
-    })
-    .slice(0, 5);
+if (!teacher) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-xl text-muted-foreground">Loading dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
