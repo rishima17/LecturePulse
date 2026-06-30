@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,8 +8,8 @@ import { useAuth } from "@/context/AuthContext";
 import { getLecturesByTeacher, getFeedbackByLecture } from "@/utils/storage";
 import CreateLectureDialog from "@/components/CreateLectureDialog";
 import LectureCard from "@/components/LectureCard";
-import CreatePollDialog from "@/components/CreatePollDialog";
 import PollCard from "@/components/PollCard";
+import CreatePollDialog from "@/components/CreatePollDialog";
 import {
   BarChart3,
   BookOpen,
@@ -47,8 +47,10 @@ const Dashboard = () => {
 
   // Redirect to login if no teacher is present
   useEffect(() => {
-    if (!teacher) {
-      navigate('/login');
+    const currentTeacher = getCurrentTeacher();
+    if (!currentTeacher) {
+      navigate("/login");
+      return;
     }
   }, [teacher, navigate]);
 
@@ -82,43 +84,25 @@ const Dashboard = () => {
 
   
 
-  const filteredLectures = useMemo(() => {
-    return lectures
-      .filter((lecture) => {
-        const matchesSearch =
-          lecture.topic?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          lecture.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          lecture.code?.toLowerCase().includes(searchTerm.toLowerCase());
-
-        const matchesStatus =
-          statusFilter === 'all' ||
-          (statusFilter === 'active' && lecture.isActive) ||
-          (statusFilter === 'completed' && !lecture.isActive);
-
-        return matchesSearch && matchesStatus;
-      })
-      .sort((a, b) => {
-        const dateA = new Date(a.createdAt || 0);
-        const dateB = new Date(b.createdAt || 0);
-
-        return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
-      });
-  }, [lectures, searchTerm, statusFilter, sortOrder]);
+  const filteredLectures = lectures.filter(
+    (lecture) =>
+      lecture.topic?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lecture.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lecture.code?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const activeLectures = filteredLectures.filter((l) => l.isActive);
   const pastLectures = filteredLectures.filter((l) => !l.isActive);
-  const recentLectures = lectures // Get the latest 5 lectures that have received feedback
-  .filter((lecture) => getFeedbackByLecture(lecture.id).length > 0)
-  .sort((a, b) => {
-    const feedbackA = getFeedbackByLecture(a.id);
-    const feedbackB = getFeedbackByLecture(b.id);
 
-    const latestA = feedbackA[feedbackA.length - 1]?.submittedAt || "";
-    const latestB = feedbackB[feedbackB.length - 1]?.submittedAt || "";
+  // Latest 5 lectures that have received feedback, most recent feedback first
+  const recentLectures = lectures
+    .filter((lecture) => getFeedbackByLecture(lecture.id).length > 0)
+    .sort((a, b) => {
+      const feedbackA = getFeedbackByLecture(a.id);
+      const feedbackB = getFeedbackByLecture(b.id);
 
-    return new Date(latestB) - new Date(latestA);
-  })
-  .slice(0, 5);
+      const latestA = feedbackA[feedbackA.length - 1]?.submittedAt || "";
+      const latestB = feedbackB[feedbackB.length - 1]?.submittedAt || "";
 
 if (!teacher) {
     return (
@@ -213,35 +197,30 @@ if (!teacher) {
             </CardContent>
           </Card>
         </div>
+
         {recentLectures.length > 0 && (
-  <Card className="mb-8">
-    <CardContent className="p-8">
-      <h2 className="text-2xl font-semibold mb-6">
-        Recent Activity
-      </h2>
-
-      <div className="space-y-3">
-        {recentLectures.map((lecture) => (
-          <div
-            key={lecture.id}
-            className="flex items-center justify-between border-b pb-2"
-          >
-            <div>
-              <p className="text-xl font-medium">{lecture.topic}</p>
-              <p className="text-base text-muted-foreground">
-                {lecture.subject}
-              </p>
-            </div>
-
-            <span className="text-base text-muted-foreground">
-              {getFeedbackByLecture(lecture.id).length} feedback
-            </span>
-          </div>
-        ))}
-      </div>
-    </CardContent>
-  </Card>
-)}
+          <Card className="mb-8">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
+              <div className="space-y-3">
+                {recentLectures.map((lecture) => (
+                  <div
+                    key={lecture.id}
+                    className="flex items-center justify-between border-b pb-2"
+                  >
+                    <div>
+                      <p className="font-medium">{lecture.topic}</p>
+                      <p className="text-sm text-muted-foreground">{lecture.subject}</p>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {getFeedbackByLecture(lecture.id).length} feedback
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between mb-6">
           <h2 className="text-3xl font-bold text-foreground">Your Lectures</h2>
@@ -384,7 +363,7 @@ if (!teacher) {
                   Active Sessions
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {activeLectures.map(lecture => (
+                  {activeLectures.map((lecture) => (
                     <LectureCard
                       key={lecture.id}
                       lecture={lecture}
@@ -400,7 +379,7 @@ if (!teacher) {
                   Past Lectures
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {pastLectures.map(lecture => (
+                  {pastLectures.map((lecture) => (
                     <LectureCard
                       key={lecture.id}
                       lecture={lecture}
@@ -418,16 +397,23 @@ if (!teacher) {
             <h3 className="text-base font-medium text-muted-foreground mb-3 uppercase tracking-wide">
               Active Polls
             </h3>
-            {polls.map(poll => (
-              <PollCard key={poll.id} poll={poll}
+            {polls.map((poll) => (
+              <PollCard
+                key={poll.id}
+                poll={poll}
                 onVote={(opt) => {
-                  setPolls(polls.map(p =>
-                    p.id === poll.id
-                      ? { ...p, options: p.options.map(o =>
-                          o.label === opt ? { ...o, votes: o.votes + 1 } : o
-                        )}
-                      : p
-                  ));
+                  setPolls(
+                    polls.map((p) =>
+                      p.id === poll.id
+                        ? {
+                            ...p,
+                            options: p.options.map((o) =>
+                              o.label === opt ? { ...o, votes: o.votes + 1 } : o
+                            ),
+                          }
+                        : p
+                    )
+                  );
                 }}
                 isTeacher={true}
               />
@@ -446,7 +432,7 @@ if (!teacher) {
       <CreateLectureDialog
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
-        teacherId={teacher ? teacher.id : ''}
+        teacherId={teacher ? teacher.id : ""}
         onCreated={handleLectureCreated}
       />
     </div>

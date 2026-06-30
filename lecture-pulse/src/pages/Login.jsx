@@ -26,24 +26,29 @@ export default function Login() {
     if (!formData.teacherId.trim()) return setError("Teacher ID is required.");
     if (!formData.password.trim()) return setError("Password is required.");
     if (formData.password.length < 6) return setError("Password must be at least 6 characters long.");
+
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    let result;
-    if (isLogin) {
-      result = login(formData.teacherId, formData.password);
-    } else {
-      if (!formData.name) {
-        result = { success: false, message: "Name is required." };
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      let result;
+      if (isLogin) {
+        result = await login(formData.teacherId, formData.password);
       } else {
-        result = register(formData.name, formData.teacherId, formData.password);
+        if (!formData.name) {
+          result = { success: false, message: "Name is required." };
+        } else {
+          result = await register(formData.name, formData.teacherId, formData.password);
+        }
       }
+
+      if (result.success) {
+        navigate("/dashboard");
+      } else {
+        setError(result.message);
+      }
+    } finally {
+      setLoading(false);
     }
-    if (result.success) {
-      navigate("/dashboard");
-    } else {
-      setError(result.message);
-    }
-    setLoading(false);
   };
 
   return (
