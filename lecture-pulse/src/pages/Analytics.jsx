@@ -8,6 +8,7 @@ import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw } from 
 import UnderstandingChart from '@/components/charts/UnderstandingChart';
 import AttentionChart from '@/components/charts/AttentionChart';
 import ConfusionChart from '@/components/charts/ConfusionChart';
+import LectureReplayTimeline from "@/components/charts/LectureReplayTimeline";
 import FeedbackTimeline from '@/components/charts/FeedbackTimeline';
 import AISummaryCard from '@/components/AISummaryCard';
 import AttendanceParticipationChart from '@/components/charts/AttendanceParticipationChart';
@@ -352,18 +353,22 @@ useEffect(() => {
                 </CardContent>
               </Card>
             </div>
-            {/* Feedback Timeline */}
-<Card>
-  <CardHeader>
-    <CardTitle className="text-base flex items-center gap-2">
-      <TrendingUp className="w-4 h-4 text-primary" />
-      Engagement Timeline
-    </CardTitle>
-  </CardHeader>
-  <CardContent>
-    <FeedbackTimeline data={analytics.timeline} />
-  </CardContent>
-</Card>
+            {/* Replay Timeline or static Feedback Timeline */}
+            {lecture?.status === 'completed' ? (
+              <LectureReplayTimeline lectureId={sessionId} />
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-primary" />
+                    Engagement Timeline
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <FeedbackTimeline data={analytics.timeline} />
+                </CardContent>
+              </Card>
+            )}
 
             {/* Insights & Suggestions */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
