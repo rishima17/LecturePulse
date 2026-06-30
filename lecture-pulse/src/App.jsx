@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Analytics from "./pages/Analytics";
 import StudentFeedback from "./pages/StudentFeedback";
 import Profile from "./pages/Profile";
+import LiveSession from "./pages/LiveSession";
 import BackToTop from "./components/BackToTop";
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         <Route path="/student" element={<StudentFeedback />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/analytics/:sessionId" element={<Analytics />} />
+        <Route path="/live/:sessionId" element={<LiveSession />} />
       </Routes>
       <BackToTop />
     </AuthProvider>

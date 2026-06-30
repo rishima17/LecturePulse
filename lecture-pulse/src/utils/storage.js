@@ -5,6 +5,7 @@
 const TEACHER_SESSION_KEY = "lecturePulse_teacher";
 const TEACHERS_DB_KEY = "lecturePulse_teachers_db";
 const STUDENT_ID_KEY = "lecturePulse_student_id";
+const LIVE_SESSIONS_KEY = "lecturePulse_liveSessions";
 
 const clearStoredTeacherSession = () => {
     localStorage.removeItem(TEACHER_SESSION_KEY);
@@ -85,7 +86,7 @@ export const clearCurrentTeacher = () => {
 export const getLectureById = (lectureId) => {
     try {
         const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
-        return allSessions.find(s => s.id === lectureId) || null;
+        return allSessions.find((s) => s.id === lectureId) || null;
     } catch (error) {
         console.error("Error getting lecture by ID", error);
         return null;
@@ -95,7 +96,7 @@ export const getLectureById = (lectureId) => {
 export const getFeedbackByLecture = (lectureId) => {
     try {
         const allFeedback = JSON.parse(localStorage.getItem("lecturePulse_feedback") || "[]");
-        return allFeedback.filter(f => f.lectureId === lectureId);
+        return allFeedback.filter((f) => f.lectureId === lectureId);
     } catch (error) {
         console.error("Error getting feedback by lecture", error);
         return [];
@@ -105,7 +106,7 @@ export const getFeedbackByLecture = (lectureId) => {
 export const hasStudentSubmitted = (lectureId, studentId) => {
     try {
         const allFeedback = JSON.parse(localStorage.getItem("lecturePulse_feedback") || "[]");
-        return allFeedback.some(f => f.lectureId === lectureId && f.studentId === studentId);
+        return allFeedback.some((f) => f.lectureId === lectureId && f.studentId === studentId);
     } catch (error) {
         console.error("Error checking student submission", error);
         return false;
@@ -115,7 +116,7 @@ export const hasStudentSubmitted = (lectureId, studentId) => {
 export const submitFeedback = (feedbackData) => {
     try {
         const allFeedback = JSON.parse(localStorage.getItem("lecturePulse_feedback") || "[]");
-        
+
         // Final server-side style check before persistence
         if (hasStudentSubmitted(feedbackData.lectureId, feedbackData.studentId)) {
             throw new Error("Already submitted feedback for this session");
@@ -124,7 +125,7 @@ export const submitFeedback = (feedbackData) => {
         const newFeedback = {
             id: crypto.randomUUID(),
             timestamp: new Date().toISOString(),
-            ...feedbackData
+            ...feedbackData,
         };
 
         localStorage.setItem("lecturePulse_feedback", JSON.stringify([...allFeedback, newFeedback]));
@@ -138,15 +139,22 @@ export const submitFeedback = (feedbackData) => {
 export const getLecturesByTeacher = (teacherId) => {
     try {
         const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
-        // Sort by newest first
+        const liveSessions = getLiveSessions();
+
         return allSessions
-            .filter(s => s.teacherId === teacherId)
+            .filter((s) => s.teacherId === teacherId)
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-            .map(s => ({
-                ...s,
-                // Determine 'isActive' based on status or logic. For now, trust the 'status' field or default to checking dates/duration if needed
-                isActive: s.status === 'active'
-            }));
+            .map((s) => {
+                const liveSession = liveSessions.find((session) => session.lectureId === s.id);
+                return {
+                    ...s,
+                    isActive: s.status === "active",
+                    isLive: Boolean(liveSession?.isLive),
+                    liveSessionId: liveSession?.id || null,
+                    liveStartedAt: liveSession?.startedAt || null,
+                    liveParticipants: liveSession?.participants || [],
+                };
+            });
     } catch (error) {
         console.error("Error getting lectures", error);
         return [];
@@ -156,19 +164,19 @@ export const getLecturesByTeacher = (teacherId) => {
 export const createLecture = (lectureData) => {
     try {
         const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
-       let code = lectureData.code;
+        let code = lectureData.code;
 
-while (allSessions.some(session => session.code === code)) {
-    code = Math.floor(100000 + Math.random() * 900000).toString();
-}
+        while (allSessions.some((session) => session.code === code)) {
+            code = Math.floor(100000 + Math.random() * 900000).toString();
+        }
 
-const newLecture = {
-    id: crypto.randomUUID(),
-    createdAt: new Date().toISOString(),
-    status: 'active',
-    ...lectureData,
-    code
-};
+        const newLecture = {
+            id: crypto.randomUUID(),
+            createdAt: new Date().toISOString(),
+            status: "active",
+            ...lectureData,
+            code,
+        };
         localStorage.setItem("lecturePulse_sessions", JSON.stringify([...allSessions, newLecture]));
         return newLecture;
     } catch (error) {
@@ -180,7 +188,7 @@ const newLecture = {
 export const updateLectureStatus = (lectureId, status) => {
     try {
         const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
-        const updatedSessions = allSessions.map(s =>
+        const updatedSessions = allSessions.map((s) =>
             s.id === lectureId ? { ...s, status } : s
         );
         localStorage.setItem("lecturePulse_sessions", JSON.stringify(updatedSessions));
@@ -192,7 +200,7 @@ export const updateLectureStatus = (lectureId, status) => {
 export const deleteLecture = (lectureId) => {
     try {
         const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
-        const updatedSessions = allSessions.filter(s => s.id !== lectureId);
+        const updatedSessions = allSessions.filter((s) => s.id !== lectureId);
         localStorage.setItem("lecturePulse_sessions", JSON.stringify(updatedSessions));
     } catch (error) {
         console.error("Error deleting lecture", error);
@@ -201,29 +209,182 @@ export const deleteLecture = (lectureId) => {
 
 // Attendance Management
 export const addAttendance = (lectureId, studentId) => {
-  try {
-    const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
-    const updatedSessions = allSessions.map(s => {
-      if (s.id === lectureId) {
-        const attendance = s.attendance ? [...s.attendance] : [];
-        attendance.push({ studentId, timestamp: new Date().toISOString() });
-        return { ...s, attendance };
-      }
-      return s;
-    });
-    localStorage.setItem("lecturePulse_sessions", JSON.stringify(updatedSessions));
-  } catch (error) {
-    console.error("Error adding attendance", error);
-  }
+    try {
+        const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
+        const updatedSessions = allSessions.map((s) => {
+            if (s.id === lectureId) {
+                const attendance = s.attendance ? [...s.attendance] : [];
+                attendance.push({ studentId, timestamp: new Date().toISOString() });
+                return { ...s, attendance };
+            }
+            return s;
+        });
+        localStorage.setItem("lecturePulse_sessions", JSON.stringify(updatedSessions));
+    } catch (error) {
+        console.error("Error adding attendance", error);
+    }
 };
 
 export const getAttendance = (lectureId) => {
-  try {
-    const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
-    const lecture = allSessions.find(s => s.id === lectureId);
-    return lecture?.attendance || [];
-  } catch (error) {
-    console.error("Error getting attendance", error);
-    return [];
-  }
+    try {
+        const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
+        const lecture = allSessions.find((s) => s.id === lectureId);
+        return lecture?.attendance || [];
+    } catch (error) {
+        console.error("Error getting attendance", error);
+        return [];
+    }
+};
+
+// Live Session Management
+export const getLiveSessions = () => {
+    try {
+        return JSON.parse(localStorage.getItem(LIVE_SESSIONS_KEY) || "[]");
+    } catch (error) {
+        console.error("Error getting live sessions", error);
+        return [];
+    }
+};
+
+export const getLiveSessionByLectureId = (lectureId) => {
+    try {
+        return getLiveSessions().find((session) => session.lectureId === lectureId) || null;
+    } catch (error) {
+        console.error("Error getting live session", error);
+        return null;
+    }
+};
+
+export const getActiveLiveSessionByLectureId = (lectureId) => {
+    const liveSession = getLiveSessionByLectureId(lectureId);
+    return liveSession?.isLive ? liveSession : null;
+};
+
+const saveLiveSessions = (liveSessions) => {
+    localStorage.setItem(LIVE_SESSIONS_KEY, JSON.stringify(liveSessions));
+};
+
+export const startLiveSession = (lecture, teacher) => {
+    try {
+        const liveSessions = getLiveSessions();
+        const now = new Date().toISOString();
+        const existingIndex = liveSessions.findIndex((session) => session.lectureId === lecture.id);
+
+        const nextSession = {
+            id: lecture.id,
+            lectureId: lecture.id,
+            teacherId: lecture.teacherId,
+            teacherName: teacher?.name || lecture.teacherName || null,
+            lectureTopic: lecture.topic,
+            lectureSubject: lecture.subject,
+            isLive: true,
+            participants: [
+                {
+                    id: teacher?.id || lecture.teacherId,
+                    name: teacher?.name || lecture.teacherName || "Teacher",
+                    role: "teacher",
+                    joinedAt: now,
+                },
+            ],
+            startedAt: now,
+            endedAt: null,
+            chatMessages: [],
+        };
+
+        const updatedSessions = [...liveSessions];
+        if (existingIndex >= 0) {
+            updatedSessions[existingIndex] = {
+                ...updatedSessions[existingIndex],
+                ...nextSession,
+            };
+        } else {
+            updatedSessions.push(nextSession);
+        }
+
+        saveLiveSessions(updatedSessions);
+        return nextSession;
+    } catch (error) {
+        console.error("Error starting live session", error);
+        throw error;
+    }
+};
+
+export const endLiveSession = (lectureId) => {
+    try {
+        const liveSessions = getLiveSessions();
+        const updatedSessions = liveSessions.map((session) =>
+            session.lectureId === lectureId
+                ? {
+                      ...session,
+                      isLive: false,
+                      endedAt: new Date().toISOString(),
+                  }
+                : session
+        );
+        saveLiveSessions(updatedSessions);
+    } catch (error) {
+        console.error("Error ending live session", error);
+    }
+};
+
+export const joinLiveSession = (lectureId, participant) => {
+    try {
+        const liveSessions = getLiveSessions();
+        const now = new Date().toISOString();
+        const updatedSessions = liveSessions.map((session) => {
+            if (session.lectureId !== lectureId) {
+                return session;
+            }
+
+            const nextParticipant = {
+                ...participant,
+                joinedAt: participant.joinedAt || now,
+            };
+
+            return {
+                ...session,
+                participants: [
+                    ...(session.participants || []).filter((item) => item.id !== nextParticipant.id),
+                    nextParticipant,
+                ],
+            };
+        });
+        saveLiveSessions(updatedSessions);
+    } catch (error) {
+        console.error("Error joining live session", error);
+    }
+};
+
+export const leaveLiveSession = (lectureId, participantId) => {
+    try {
+        const liveSessions = getLiveSessions();
+        const updatedSessions = liveSessions.map((session) =>
+            session.lectureId === lectureId
+                ? {
+                      ...session,
+                      participants: (session.participants || []).filter((participant) => participant.id !== participantId),
+                  }
+                : session
+        );
+        saveLiveSessions(updatedSessions);
+    } catch (error) {
+        console.error("Error leaving live session", error);
+    }
+};
+
+export const appendLiveChatMessage = (lectureId, message) => {
+    try {
+        const liveSessions = getLiveSessions();
+        const updatedSessions = liveSessions.map((session) =>
+            session.lectureId === lectureId
+                ? {
+                      ...session,
+                      chatMessages: [...(session.chatMessages || []), message],
+                  }
+                : session
+        );
+        saveLiveSessions(updatedSessions);
+    } catch (error) {
+        console.error("Error appending live chat message", error);
+    }
 };
