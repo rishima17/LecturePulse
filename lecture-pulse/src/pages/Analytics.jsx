@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import TopicCoverageHeatmap from '@/components/charts/TopicCoverageHeatmap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getLectureById, getFeedbackByLecture, getCurrentTeacher } from '@/utils/storage';
 import { calculateAnalytics, getOverallEffectiveness, getEffectivenessLabel } from '@/utils/analytics';
@@ -353,6 +354,10 @@ useEffect(() => {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Topic Coverage Heatmap Section */}
+            <TopicCoverageHeatmap feedback={feedback} />
+
             {/* Replay Timeline or static Feedback Timeline */}
             {lecture?.status === 'completed' ? (
               <LectureReplayTimeline lectureId={sessionId} />
