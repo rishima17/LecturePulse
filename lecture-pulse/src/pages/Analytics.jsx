@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { SmartEngagementScore } from '@/components/charts/SmartEngagementScore';
 import TopicCoverageHeatmap from '@/components/charts/TopicCoverageHeatmap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getLectureById, getFeedbackByLecture, getCurrentTeacher } from '@/utils/storage';
@@ -231,7 +232,8 @@ useEffect(() => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {analytics.totalResponses === 0 ? (
+        <SmartEngagementScore analytics={analytics} lecture={lecture} feedback={feedback} />
+{analytics.totalResponses === 0 ? (
           <Card variant="glass" className="text-center py-12 border-dashed">
             <CardContent>
               <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
