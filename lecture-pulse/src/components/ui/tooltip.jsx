@@ -5,27 +5,16 @@ import { cn } from "@/lib/utils";
 
 /**
  * Simple tooltip implementation using Tailwind CSS.
- *
- * Usage:
- * <Tooltip>
- *   <TooltipTrigger asChild>
- *     <button className="...">Hover me</button>
- *   </TooltipTrigger>
- *   <TooltipContent>Tooltip text</TooltipContent>
- * </Tooltip>
  */
 export const Tooltip = ({ children }) => {
-  // Ensure children is a single React element
   return <>{children}</>;
 };
 
 export const TooltipTrigger = ({ asChild, children }) => {
-  // No state needed
   const handleMouseEnter = () => {};
   const handleMouseLeave = () => {};
 
   if (asChild) {
-    // Clone the child to attach mouse events
     return cloneElement(children, {
       onMouseEnter: handleMouseEnter,
       onMouseLeave: handleMouseLeave,
@@ -44,8 +33,6 @@ export const TooltipTrigger = ({ asChild, children }) => {
 };
 
 export const TooltipContent = ({ children }) => {
-  // This component expects to be rendered inside TooltipTrigger's hierarchy.
-  // It will be positioned absolutely relative to the nearest positioned ancestor.
   return (
     <div
       className={cn(
@@ -59,5 +46,4 @@ export const TooltipContent = ({ children }) => {
   );
 };
 
-// Export default for convenience if needed
 export default Tooltip;
