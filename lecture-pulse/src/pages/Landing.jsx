@@ -68,57 +68,60 @@ function Landing() {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-3">
-            <button
-              onClick={toggleTheme}
-              aria-label="Toggle Theme"
-              className={`
-    group relative flex items-center justify-center
-    w-11 h-11 rounded-full
-    border border-border/50
-    backdrop-blur-xl
-    transition-all duration-300
-    hover:scale-105
-    active:scale-95
-    shadow-lg shadow-black/5
+          <div className="hidden md:flex items-center justify-between flex-1 ml-8">
+            {/* Center Navigation */}
+            <div className="flex items-center gap-8 mx-auto">
+              <Button variant="ghost" asChild>
+                <Link to="/">Home</Link>
+              </Button>
 
-    ${theme === "light"
-                  ? "bg-[#00C2C5] text-white hover:bg-[#00aeb1]"
-                  : "bg-[#00C2C5]/20 text-white hover:bg-[#00C2C5]/30 border-[#00C2C5]/30"
-                }
-  `}
-            >
-              <div className="relative z-10 text-white">
-                {theme === "dark" ? (
-                  <Sun
-                    className="
-          w-5 h-5 text-white
-          transition-all duration-500
-          rotate-0 scale-100
-          group-hover:rotate-12
-        "
-                  />
-                ) : (
-                  <Moon
-                    className="
-          w-5 h-5 text-white
-          transition-all duration-500
-          rotate-0 scale-100
-          group-hover:-rotate-12
-        "
-                  />
-                )}
-              </div>
-            </button>
+              <Button variant="ghost" asChild>
+                <Link to="/dashboard">Dashboard</Link>
+              </Button>
 
-            <Button variant="ghost" asChild>
-              <Link to="/student">Student Feedback</Link>
-            </Button>
-            <Button variant="default" asChild>
-              <Link to="/login">Teacher Login</Link>
-            </Button>
+              <Button variant="ghost" asChild>
+                <a href="#features">Features</a>
+              </Button>
+            </div>
+
+            {/* Right Side */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={toggleTheme}
+                aria-label="Toggle Theme"
+                className={`
+                  group relative flex items-center justify-center
+                  w-11 h-11 rounded-full
+                  border border-border/50
+                  backdrop-blur-xl
+                  transition-all duration-300
+                  hover:scale-105
+                  active:scale-95
+                  shadow-lg shadow-black/5
+
+                  ${theme === "light"
+                    ? "bg-[#00C2C5] text-white hover:bg-[#00aeb1]"
+                    : "bg-[#00C2C5]/20 text-white hover:bg-[#00C2C5]/30 border-[#00C2C5]/30"}
+                `}
+              >
+                <div className="relative z-10 text-white">
+                  {theme === "dark" ? (
+                    <Sun className="w-5 h-5 transition-all duration-500 group-hover:rotate-12" />
+                  ) : (
+                    <Moon className="w-5 h-5 transition-all duration-500 group-hover:-rotate-12" />
+                  )}
+                </div>
+              </button>
+
+              <Button variant="ghost" asChild>
+                <Link to="/student">Student Feedback</Link>
+              </Button>
+
+              <Button variant="default" asChild>
+                <Link to="/login">Teacher Login</Link>
+              </Button>
+            </div>
           </div>
-
           {/* Mobile Menu Button */}
           <button
             className="md:hidden p-2 text-foreground"
@@ -138,6 +141,32 @@ function Landing() {
               className="md:hidden border-t border-border bg-background"
             >
               <div className="p-4 flex flex-col gap-4">
+                <Button
+                  variant="ghost"
+                  asChild
+                  className="w-full justify-start"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Link to="/">Home</Link>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  asChild
+                  className="w-full justify-start"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Link to="/dashboard">Dashboard</Link>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  asChild
+                  className="w-full justify-start"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <a href="#features">Features</a>
+                </Button>
                 <button
                   onClick={toggleTheme}
                   className="
@@ -268,7 +297,7 @@ function Landing() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 bg-background">
+      <section id="features" className="py-20 px-4 bg-background">
         <div className="container mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
