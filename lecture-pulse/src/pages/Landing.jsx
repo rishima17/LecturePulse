@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Activity,
@@ -13,6 +12,7 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import heroBg from "@/assets/hero-bg.png";
@@ -53,15 +53,6 @@ const stats = [
 function Landing() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const location = useLocation();
-  const handleHomeClick = () => {
-    if (location.pathname === "/") {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  };
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -80,20 +71,8 @@ function Landing() {
           <div className="hidden md:flex items-center justify-between flex-1 ml-8">
             {/* Center Navigation */}
             <div className="flex items-center gap-8 mx-auto">
-              <Button
-                variant="ghost"
-                asChild
-                className="w-full justify-start"
-              >
-                <Link
-                  to="/"
-                  onClick={() => {
-                    handleHomeClick();
-                    setIsMobileMenuOpen(false);
-                  }}
-                >
-                  Home
-                </Link>
+              <Button variant="ghost" asChild>
+                <Link to="/">Home</Link>
               </Button>
 
               <Button variant="ghost" asChild>
