@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { GraduationCap, Loader2, User, Lock, ArrowRight, Home } from "lucide-react";
+import { GraduationCap, Loader2, User, Lock, ArrowRight, Home, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/context/ThemeContext";
 import { Sun, Moon } from "lucide-react";
@@ -16,7 +16,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ name: "", teacherId: "", password: "" });
   const [error, setError] = useState("");
-
+  const [showPassword, setShowPassword] = useState(false);
   const { login, register } = useAuth();
   const navigate = useNavigate();
 
@@ -123,12 +123,33 @@ export default function Login() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                  <Input id="password" type="password" placeholder="••••••••" className="pl-9 h-12 bg-background/50" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
-                </div>
-              </div>
+  <Label htmlFor="password">Password</Label>
+  <div className="relative">
+    <Lock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+    
+    <Input 
+      id="password" 
+      type={showPassword ? "text" : "password"} 
+      placeholder="••••••••" 
+      value={formData.password}
+      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+      className="pl-9 pr-10 h-12 bg-background" 
+    />
+
+    {/* Toggle Button */}
+    <button
+      type="button"
+      onClick={() => setShowPassword(!showPassword)}
+      className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground"
+    >
+      {showPassword ? (
+        <EyeOff className="w-4 h-4" />
+      ) : (
+        <Eye className="w-4 h-4" />
+      )}
+    </button>
+  </div>
+</div>
 
               <AnimatePresence>
                 {error && (
