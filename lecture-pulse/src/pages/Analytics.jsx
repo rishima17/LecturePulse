@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getLectureById, getFeedbackByLecture, getCurrentTeacher } from '@/utils/storage';
 import { calculateAnalytics, getOverallEffectiveness, getEffectivenessLabel } from '@/utils/analytics';
-import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw, FileText, Eye, Edit, Plus } from 'lucide-react';
+import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw, FileText, Eye, Edit, Plus, SlidersHorizontal } from 'lucide-react';
 import UnderstandingChart from '@/components/charts/UnderstandingChart';
 import AttentionChart from '@/components/charts/AttentionChart';
 import ConfusionChart from '@/components/charts/ConfusionChart';
@@ -19,6 +19,26 @@ import LectureNotesEditor from '@/components/LectureNotesEditor';
 import LectureNotesViewer from '@/components/LectureNotesViewer';
 import { AnimatePresence } from 'framer-motion';
 
+// Dashboard layout preferences customization
+import { getDashboardPreferences, saveDashboardPreferences } from '@/utils/dashboardPreferences';
+import AnalyticsCustomizationPanel from '@/components/AnalyticsCustomizationPanel';
+import SortableAnalyticsWidget from '@/components/SortableAnalyticsWidget';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+
+
 const Analytics = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
@@ -29,6 +49,34 @@ const Analytics = () => {
   const understandingRef = useRef(null);
   const attentionRef = useRef(null);
   const confusionRef = useRef(null);
+
+  const [preferences, setPreferences] = useState(() => getDashboardPreferences());
+  const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setPreferences((prev) => {
+      const oldIndex = prev.widgetOrder.indexOf(active.id);
+      const newIndex = prev.widgetOrder.indexOf(over.id);
+      const newOrder = arrayMove(prev.widgetOrder, oldIndex, newIndex);
+      const nextPrefs = { ...prev, widgetOrder: newOrder };
+      saveDashboardPreferences(nextPrefs);
+      return nextPrefs;
+    });
+  };
 
   const captureChart = async (ref) => {
     if (!ref.current) return null;
@@ -281,6 +329,173 @@ useEffect(() => {
       </Card>
     );
   };
+  
+  const getWidgetSpanClass = (widgetId) => {
+    switch (widgetId) {
+      case "summary":
+      case "comments":
+        return "lg:col-span-3 col-span-1";
+      case "understanding":
+      case "attention":
+      case "confusion":
+        return "lg:col-span-1 col-span-1";
+      default:
+        return "col-span-1";
+    }
+  };
+
+  const renderWidget = (widgetId) => {
+    switch (widgetId) {
+      case "summary":
+        return (
+          <div key="summary" className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full text-left">
+            <Card variant="gradient">
+              <CardContent className="p-6 text-center">
+                <div className={`text-4xl font-bold ${effectivenessInfo.color}`}>
+                  {effectiveness}%
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">Overall Effectiveness</p>
+                <p className={`text-xs font-medium mt-1 ${effectivenessInfo.color}`}>
+                  {effectivenessInfo.label}
+                </p>
+              </CardContent>
+            </Card>
+            <Card variant="gradient">
+              <CardContent className="p-6 text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  <span className="text-4xl font-bold text-foreground">{analytics.totalResponses}</span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">Total Responses</p>
+              </CardContent>
+            </Card>
+            <Card variant="gradient">
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl font-bold text-chart-understanding">
+                  {analytics.understandingScore}%
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">Understanding Score</p>
+              </CardContent>
+            </Card>
+            <Card variant="gradient">
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl font-bold text-chart-attention">
+                  {analytics.attentionScore}%
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">Attention Score</p>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      case "understanding":
+        return (
+          <Card key="understanding" className="w-full text-left">
+            <CardHeader>
+              <CardTitle className="text-base">Understanding Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div ref={understandingRef}>
+                <UnderstandingChart data={analytics.understandingDistribution} />
+              </div>
+            </CardContent>
+          </Card>
+        );
+      case "attention":
+        return (
+          <Card key="attention" className="w-full text-left">
+            <CardHeader>
+              <CardTitle className="text-base">Attention Levels</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div ref={attentionRef}>
+                <AttentionChart data={analytics.attentionDistribution} />
+              </div>
+            </CardContent>
+          </Card>
+        );
+      case "confusion":
+        return (
+          <Card key="confusion" className="w-full text-left">
+            <CardHeader>
+              <CardTitle className="text-base">Confusion Points</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div ref={confusionRef}>
+                <ConfusionChart data={analytics.confusionPointDistribution} />
+              </div>
+            </CardContent>
+          </Card>
+        );
+      case "comments":
+        return (
+          <div key="comments" className="space-y-6 w-full text-left">
+            {/* Feedback Timeline */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-primary" />
+                  Engagement Timeline
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FeedbackTimeline data={analytics.timeline} />
+              </CardContent>
+            </Card>
+
+            {/* Insights & Suggestions */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Common Keywords */}
+              {analytics.commonKeywords.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-warning" />
+                      Common Keywords from Comments
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {analytics.commonKeywords.map((keyword, i) => (
+                        <span 
+                          key={i}
+                          className="px-3 py-1 bg-yellow-500/10 text-yellow-600 rounded-full text-sm font-medium"
+                        >
+                          {keyword}
+                        </span>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Suggestions */}
+              <Card className={analytics.commonKeywords.length === 0 ? 'lg:col-span-2' : ''}>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Lightbulb className="w-4 h-4 text-primary" />
+                    Improvement Suggestions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {analytics.suggestions.map((suggestion, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <TrendingUp className="w-4 h-4 text-primary mt-1 shrink-0" />
+                        <span className="text-sm text-foreground">{suggestion}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const visibleWidgets = preferences.widgetOrder.filter(id => !preferences.hiddenWidgets.includes(id));
 
   return (
     <div className="min-h-screen bg-background pb-12">
@@ -315,6 +530,10 @@ useEffect(() => {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setIsCustomizerOpen(true)}>
+                <SlidersHorizontal className="w-4 h-4 mr-2" />
+                Customize
+              </Button>
               <Button variant="outline" size="sm" onClick={loadData}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh
@@ -357,139 +576,43 @@ useEffect(() => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             {/* Left Main Content */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Overview Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card variant="gradient">
-                  <CardContent className="p-6 text-center">
-                    <div className={`text-4xl font-bold ${effectivenessInfo.color}`}>
-                      {effectiveness}%
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">Overall Effectiveness</p>
-                    <p className={`text-xs font-medium mt-1 ${effectivenessInfo.color}`}>
-                      {effectivenessInfo.label}
+              {visibleWidgets.length === 0 ? (
+                <div className="text-center py-16 px-4 bg-white/40 dark:bg-slate-900/40 border border-dashed border-slate-200/80 dark:border-slate-800/80 rounded-xl flex flex-col items-center justify-center gap-4 animate-in fade-in duration-200">
+                  <SlidersHorizontal className="w-12 h-12 text-muted-foreground/60 animate-pulse" />
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-foreground">No analytics widgets selected</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Customize Dashboard to display analytics.
                     </p>
-                  </CardContent>
-                </Card>
-                <Card variant="gradient">
-                  <CardContent className="p-6 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <Users className="w-5 h-5 text-primary" />
-                      <span className="text-4xl font-bold text-foreground">{analytics.totalResponses}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">Total Responses</p>
-                  </CardContent>
-                </Card>
-                <Card variant="gradient">
-                  <CardContent className="p-6 text-center">
-                    <div className="text-4xl font-bold text-chart-understanding">
-                      {analytics.understandingScore}%
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">Understanding Score</p>
-                  </CardContent>
-                </Card>
-                <Card variant="gradient">
-                  <CardContent className="p-6 text-center">
-                    <div className="text-4xl font-bold text-chart-attention">
-                      {analytics.attentionScore}%
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">Attention Score</p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Charts Row */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Understanding Distribution</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div ref={understandingRef}>
-                      <UnderstandingChart data={analytics.understandingDistribution} />
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Attention Levels</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div ref={attentionRef}>
-                      <AttentionChart data={analytics.attentionDistribution} />
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Confusion Points</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div ref={confusionRef}>
-                      <ConfusionChart data={analytics.confusionPointDistribution} />
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Feedback Timeline */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-primary" />
-                    Engagement Timeline
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <FeedbackTimeline data={analytics.timeline} />
-                </CardContent>
-              </Card>
-
-              {/* Insights & Suggestions */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Common Keywords */}
-                {analytics.commonKeywords.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4 text-warning" />
-                        Common Keywords from Comments
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {analytics.commonKeywords.map((keyword, i) => (
-                          <span 
-                            key={i}
-                            className="px-3 py-1 bg-yellow-500/10 text-yellow-600 rounded-full text-sm font-medium"
-                          >
-                            {keyword}
-                          </span>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Suggestions */}
-                <Card className={analytics.commonKeywords.length === 0 ? 'lg:col-span-2' : ''}>
-                  <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Lightbulb className="w-4 h-4 text-primary" />
-                      Improvement Suggestions
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-3">
-                      {analytics.suggestions.map((suggestion, i) => (
-                        <li key={i} className="flex items-start gap-3">
-                          <TrendingUp className="w-4 h-4 text-primary mt-1 shrink-0" />
-                          <span className="text-sm text-foreground">{suggestion}</span>
-                        </li>
+                  </div>
+                  <Button variant="default" size="sm" onClick={() => setIsCustomizerOpen(true)} className="cursor-pointer">
+                    Customize Dashboard
+                  </Button>
+                </div>
+              ) : (
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={visibleWidgets}
+                    strategy={rectSortingStrategy}
+                  >
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                      {visibleWidgets.map((widgetId) => (
+                        <SortableAnalyticsWidget 
+                          key={widgetId} 
+                          id={widgetId}
+                          className={getWidgetSpanClass(widgetId)}
+                        >
+                          {renderWidget(widgetId)}
+                        </SortableAnalyticsWidget>
                       ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </div>
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              )}
             </div>
 
             {/* Right Column Sidebar */}
@@ -517,6 +640,13 @@ useEffect(() => {
           <LectureNotesViewer
             notes={lecture.lectureNotes || ""}
             onClose={() => setIsViewingNotes(false)}
+          />
+        )}
+        {isCustomizerOpen && (
+          <AnalyticsCustomizationPanel
+            isOpen={isCustomizerOpen}
+            onClose={() => setIsCustomizerOpen(false)}
+            onSave={(newPrefs) => setPreferences(newPrefs)}
           />
         )}
       </AnimatePresence>
