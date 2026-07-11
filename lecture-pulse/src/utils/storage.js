@@ -165,7 +165,9 @@ while (allSessions.some(session => session.code === code)) {
 const newLecture = {
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     status: 'active',
+    lectureNotes: '',
     ...lectureData,
     code
 };
@@ -197,4 +199,48 @@ export const deleteLecture = (lectureId) => {
     } catch (error) {
         console.error("Error deleting lecture", error);
     }
+};
+
+export const updateLecture = (lectureId, updatedData) => {
+    try {
+        const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
+        const updatedSessions = allSessions.map(s => {
+            if (s.id === lectureId) {
+                return {
+                    ...s,
+                    ...updatedData,
+                    updatedAt: new Date().toISOString()
+                };
+            }
+            return s;
+        });
+        localStorage.setItem("lecturePulse_sessions", JSON.stringify(updatedSessions));
+        return updatedSessions.find(s => s.id === lectureId) || null;
+    } catch (error) {
+        console.error("Error updating lecture", error);
+        return null;
+    }
+};
+
+export const getLectureNotes = (lectureId) => {
+    const lecture = getLectureById(lectureId);
+    return lecture ? lecture.lectureNotes || "" : "";
+};
+
+export const saveLectureNotes = (lectureId, notes) => {
+    if (typeof notes !== "string") {
+        throw new Error("Notes must be a string");
+    }
+    const trimmedNotes = notes.trim();
+    if (!trimmedNotes) {
+        throw new Error("Notes cannot be empty");
+    }
+    if (trimmedNotes.length > 10000) {
+        throw new Error("Notes cannot exceed 10000 characters");
+    }
+    return updateLecture(lectureId, { lectureNotes: trimmedNotes });
+};
+
+export const updateLectureNotes = (lectureId, notes) => {
+    return saveLectureNotes(lectureId, notes);
 };
