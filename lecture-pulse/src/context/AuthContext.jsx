@@ -9,7 +9,17 @@ export function AuthProvider({ children }) {
   });
   const [loading] = useState(false);
 
-  const login = (teacherId, password) => {
+  const hashPassword = async (password) => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+
+    return Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  };
+
+  const login = async (teacherId, password) => {
     // Hackathon Logic: Retrieve from array of teachers or single object?
     // Let's assume we store a "teachers" object in LS: { [id]: { password, name } }
     
@@ -18,7 +28,24 @@ export function AuthProvider({ children }) {
 
     const user = teachers[teacherId];
 
-    if (user && user.password === password) {
+    let isValidPassword = false;
+    if (user) {
+      const looksHashed = /^[a-f0-9]{64}$/i.test(user.password);
+      if (looksHashed) {
+        isValidPassword = user.password === await hashPassword(password);
+      } else {
+        isValidPassword = user.password === password;
+        if (isValidPassword) {
+          user.password = await hashPassword(password);
+          localStorage.setItem(
+            "lecturePulse_teachers_db",
+            JSON.stringify(teachers)
+          );
+        }
+      }
+    }
+
+    if (user && isValidPassword) {
       const sessionUser = { 
         id: teacherId, 
         name: user.name,
@@ -35,7 +62,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = (name, teacherId, password) => {
+  const register = async (name, teacherId, password) => {
       const teachersFn = localStorage.getItem("lecturePulse_teachers_db");
       const teachers = teachersFn ? JSON.parse(teachersFn) : {};
 
@@ -43,7 +70,10 @@ export function AuthProvider({ children }) {
           return { success: false, message: "Teacher ID already exists." };
       }
 
-      teachers[teacherId] = { name, password };
+      teachers[teacherId] = {
+        name,
+        password: await hashPassword(password),
+      };
       localStorage.setItem("lecturePulse_teachers_db", JSON.stringify(teachers));
       
       // Auto login

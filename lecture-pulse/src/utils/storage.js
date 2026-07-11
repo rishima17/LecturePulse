@@ -5,6 +5,7 @@
 const TEACHER_SESSION_KEY = "lecturePulse_teacher";
 const TEACHERS_DB_KEY = "lecturePulse_teachers_db";
 const STUDENT_ID_KEY = "lecturePulse_student_id";
+const LIVE_SESSIONS_KEY = "lecturePulse_liveSessions";
 
 const clearStoredTeacherSession = () => {
     localStorage.removeItem(TEACHER_SESSION_KEY);
@@ -100,7 +101,7 @@ export const getLectureById = (lectureId) => {
 export const getFeedbackByLecture = (lectureId) => {
     try {
         const allFeedback = JSON.parse(localStorage.getItem("lecturePulse_feedback") || "[]");
-        return allFeedback.filter(f => f.lectureId === lectureId);
+        return allFeedback.filter((f) => f.lectureId === lectureId);
     } catch (error) {
         console.error("Error getting feedback by lecture", error);
         return [];
@@ -110,7 +111,7 @@ export const getFeedbackByLecture = (lectureId) => {
 export const hasStudentSubmitted = (lectureId, studentId) => {
     try {
         const allFeedback = JSON.parse(localStorage.getItem("lecturePulse_feedback") || "[]");
-        return allFeedback.some(f => f.lectureId === lectureId && f.studentId === studentId);
+        return allFeedback.some((f) => f.lectureId === lectureId && f.studentId === studentId);
     } catch (error) {
         console.error("Error checking student submission", error);
         return false;
@@ -120,7 +121,7 @@ export const hasStudentSubmitted = (lectureId, studentId) => {
 export const submitFeedback = (feedbackData) => {
     try {
         const allFeedback = JSON.parse(localStorage.getItem("lecturePulse_feedback") || "[]");
-        
+
         // Final server-side style check before persistence
         if (hasStudentSubmitted(feedbackData.lectureId, feedbackData.studentId)) {
             throw new Error("Already submitted feedback for this session");
@@ -129,7 +130,7 @@ export const submitFeedback = (feedbackData) => {
         const newFeedback = {
             id: crypto.randomUUID(),
             timestamp: new Date().toISOString(),
-            ...feedbackData
+            ...feedbackData,
         };
 
         localStorage.setItem("lecturePulse_feedback", JSON.stringify([...allFeedback, newFeedback]));
@@ -143,9 +144,10 @@ export const submitFeedback = (feedbackData) => {
 export const getLecturesByTeacher = (teacherId) => {
     try {
         const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
-        // Sort by newest first
+        const liveSessions = getLiveSessions();
+
         return allSessions
-            .filter(s => s.teacherId === teacherId)
+            .filter((s) => s.teacherId === teacherId)
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .map(s => ({
                 ...s,
@@ -162,11 +164,11 @@ export const getLecturesByTeacher = (teacherId) => {
 export const createLecture = (lectureData) => {
     try {
         const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
-       let code = lectureData.code;
+        let code = lectureData.code;
 
-while (allSessions.some(session => session.code === code)) {
-    code = Math.floor(100000 + Math.random() * 900000).toString();
-}
+        while (allSessions.some((session) => session.code === code)) {
+            code = Math.floor(100000 + Math.random() * 900000).toString();
+        }
 
 const newLecture = {
     id: crypto.randomUUID(),
@@ -189,7 +191,7 @@ const newLecture = {
 export const updateLectureStatus = (lectureId, status) => {
     try {
         const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
-        const updatedSessions = allSessions.map(s =>
+        const updatedSessions = allSessions.map((s) =>
             s.id === lectureId ? { ...s, status } : s
         );
         localStorage.setItem("lecturePulse_sessions", JSON.stringify(updatedSessions));
@@ -201,7 +203,7 @@ export const updateLectureStatus = (lectureId, status) => {
 export const deleteLecture = (lectureId) => {
     try {
         const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
-        const updatedSessions = allSessions.filter(s => s.id !== lectureId);
+        const updatedSessions = allSessions.filter((s) => s.id !== lectureId);
         localStorage.setItem("lecturePulse_sessions", JSON.stringify(updatedSessions));
     } catch (error) {
         console.error("Error deleting lecture", error);
