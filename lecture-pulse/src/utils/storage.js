@@ -85,7 +85,12 @@ export const clearCurrentTeacher = () => {
 export const getLectureById = (lectureId) => {
     try {
         const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
-        return allSessions.find(s => s.id === lectureId) || null;
+        const session = allSessions.find(s => s.id === lectureId);
+        if (!session) return null;
+        return {
+            ...session,
+            bookmarked: !!session.bookmarked
+        };
     } catch (error) {
         console.error("Error getting lecture by ID", error);
         return null;
@@ -145,7 +150,8 @@ export const getLecturesByTeacher = (teacherId) => {
             .map(s => ({
                 ...s,
                 // Determine 'isActive' based on status or logic. For now, trust the 'status' field or default to checking dates/duration if needed
-                isActive: s.status === 'active'
+                isActive: s.status === 'active',
+                bookmarked: !!s.bookmarked
             }));
     } catch (error) {
         console.error("Error getting lectures", error);
@@ -168,6 +174,7 @@ const newLecture = {
     updatedAt: new Date().toISOString(),
     status: 'active',
     lectureNotes: '',
+    bookmarked: false,
     ...lectureData,
     code
 };

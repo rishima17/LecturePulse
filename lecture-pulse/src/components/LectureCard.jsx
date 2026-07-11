@@ -9,6 +9,7 @@ import { QRCodeSVG } from "qrcode.react";
 import LectureNotesEditor from "@/components/LectureNotesEditor";
 import LectureNotesViewer from "@/components/LectureNotesViewer";
 import { AnimatePresence } from "framer-motion";
+import BookmarkButton from "@/components/BookmarkButton";
 
 const LectureCard = ({ lecture, onUpdate }) => {
   const navigate = useNavigate();
@@ -80,22 +81,29 @@ const LectureCard = ({ lecture, onUpdate }) => {
     <Card className="rounded-xl border shadow-sm hover:shadow-md transition-all duration-300 bg-white group overflow-hidden">
       <CardContent className="p-5 flex flex-col h-full gap-4">
         {/* Header */}
-        <div className="flex justify-between items-start">
-          <div className="space-y-1">
+        <div className="flex justify-between items-start gap-3">
+          <div className="space-y-1 flex-1">
             <h3 className="font-bold text-lg leading-tight text-foreground">
               {lecture.topic}
             </h3>
             <p className="text-sm text-muted-foreground">{lecture.subject}</p>
           </div>
-          {lecture.isActive ? (
-            <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 text-xs font-semibold rounded-full">
-              Active
-            </span>
-          ) : (
-            <span className="px-3 py-1 bg-muted text-muted-foreground text-xs font-semibold rounded-full">
-              Completed
-            </span>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            <BookmarkButton
+              lectureId={lecture.id}
+              bookmarked={lecture.bookmarked}
+              onToggle={onUpdate}
+            />
+            {lecture.isActive ? (
+              <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 text-xs font-semibold rounded-full">
+                Active
+              </span>
+            ) : (
+              <span className="px-3 py-1 bg-muted text-muted-foreground text-xs font-semibold rounded-full">
+                Completed
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Code Box */}

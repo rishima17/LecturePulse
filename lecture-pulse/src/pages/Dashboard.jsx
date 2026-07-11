@@ -23,6 +23,7 @@ import {
   Search,
   User,
   Sparkles,
+  Star,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -36,6 +37,7 @@ const Dashboard = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [polls, setPolls] = useState([]);
   const [showPollDialog, setShowPollDialog] = useState(false);
+  const [bookmarkFilter, setBookmarkFilter] = useState('all');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -82,7 +84,11 @@ const Dashboard = () => {
           (statusFilter === 'active' && lecture.isActive) ||
           (statusFilter === 'completed' && !lecture.isActive);
 
-        return matchesSearch && matchesStatus;
+        const matchesBookmark =
+          bookmarkFilter === 'all' ||
+          (bookmarkFilter === 'bookmarked' && lecture.bookmarked);
+
+        return matchesSearch && matchesStatus && matchesBookmark;
       })
       .sort((a, b) => {
         const dateA = new Date(a.createdAt || 0);
@@ -90,7 +96,7 @@ const Dashboard = () => {
 
         return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
       });
-  }, [lectures, searchTerm, statusFilter, sortOrder]);
+  }, [lectures, searchTerm, statusFilter, bookmarkFilter, sortOrder]);
 
   const activeLectures = filteredLectures.filter((l) => l.isActive);
   const pastLectures = filteredLectures.filter((l) => !l.isActive);
@@ -254,6 +260,31 @@ if (!teacher) return null;
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
             </select>
+            <div className="flex bg-muted/50 p-1 rounded-lg border border-border/50">
+              <button
+                type="button"
+                onClick={() => setBookmarkFilter('all')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                  bookmarkFilter === 'all'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                All Lectures
+              </button>
+              <button
+                type="button"
+                onClick={() => setBookmarkFilter('bookmarked')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1 cursor-pointer ${
+                  bookmarkFilter === 'bookmarked'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Star className="w-3 h-3 fill-current text-amber-500" />
+                Bookmarked Only
+              </button>
+            </div>
             <Button
               variant="outline"
               size="sm"
@@ -261,6 +292,7 @@ if (!teacher) return null;
                 setSearchTerm('');
                 setStatusFilter('all');
                 setSortOrder('newest');
+                setBookmarkFilter('all');
               }}
             >
               Clear Filters
@@ -320,12 +352,17 @@ if (!teacher) return null;
       <Search className="w-7 h-7 text-muted-foreground" />
     </div>
     <div className="space-y-1">
-      <h3 className="text-xl font-medium text-foreground">No lectures found</h3>
+      <h3 className="text-xl font-medium text-foreground">
+        {bookmarkFilter === 'bookmarked' ? 'No bookmarked lectures found' : 'No lectures found'}
+      </h3>
       <p className="text-base text-muted-foreground">
-        No lectures match your current filters. Try adjusting your search or{" "}
+        {bookmarkFilter === 'bookmarked'
+          ? 'No bookmarked lectures match your current filters.'
+          : 'No lectures match your current filters.'}{" "}
+        Try adjusting your search or{" "}
         <button
-          onClick={() => { setSearchTerm(''); setStatusFilter('all'); setSortOrder('newest'); }}
-          className="text-primary underline-offset-2 hover:underline focus:outline-none"
+          onClick={() => { setSearchTerm(''); setStatusFilter('all'); setSortOrder('newest'); setBookmarkFilter('all'); }}
+          className="text-primary underline-offset-2 hover:underline focus:outline-none cursor-pointer"
         >
           clear all filters
         </button>
