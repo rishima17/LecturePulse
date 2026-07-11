@@ -1,6 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { SmartEngagementScore } from '@/components/charts/SmartEngagementScore';
+import TopicCoverageHeatmap from '@/components/charts/TopicCoverageHeatmap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getLectureById, getFeedbackByLecture, getCurrentTeacher } from '@/utils/storage';
 import { calculateAnalytics, getOverallEffectiveness, getEffectivenessLabel } from '@/utils/analytics';
@@ -8,8 +10,10 @@ import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw, FileTe
 import UnderstandingChart from '@/components/charts/UnderstandingChart';
 import AttentionChart from '@/components/charts/AttentionChart';
 import ConfusionChart from '@/components/charts/ConfusionChart';
+import LectureReplayTimeline from "@/components/charts/LectureReplayTimeline";
 import FeedbackTimeline from '@/components/charts/FeedbackTimeline';
 import AISummaryCard from '@/components/AISummaryCard';
+import AttendanceParticipationChart from '@/components/charts/AttendanceParticipationChart';
 import { generateLecturePDF } from "@/utils/pdfReport";
 import { generateLectureCSV } from "@/utils/csvReport";
 import { useRef } from "react";
@@ -43,6 +47,14 @@ const Analytics = () => {
   };
 
   const [feedback, setFeedback] = useState([]);
+const clusters = useMemo(() => {
+    const comments = feedback.map((f) => f.comment).filter(Boolean);
+    if (!comments.length) return [];
+    return clusterComments(comments);
+  }, [feedback]);
+const totalFeedback = feedback.length;
+const totalAttendance = lecture?.attendance?.length || 0;
+const participationRate = totalAttendance ? Math.round((totalFeedback / totalAttendance) * 100) : 0;
   const loadData = useCallback(async () => {
     if (!sessionId) return;
     
@@ -135,6 +147,8 @@ useEffect(() => {
       window.removeEventListener('feedback-updated', onFeedbackUpdated);
     };
   }, [loadData]);
+
+  // Clusters are computed via useMemo above
 
   if (!lecture || !analytics) {
     return (
