@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { deleteLecture, getFeedbackByLecture, startLiveSession, getActiveLiveSessionByLectureId, endLiveSession } from "@/utils/storage";
+import { Trash2, Check, QrCode, X, Download, FileText, Eye, Edit, Plus } from "lucide-react";
+import { deleteLecture, getFeedbackByLecture } from "@/utils/storage";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
-import { Check, QrCode, Trash2, X, Download, Radio, Square, Play, Users } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
+import LectureNotesEditor from "@/components/LectureNotesEditor";
+import LectureNotesViewer from "@/components/LectureNotesViewer";
+import { AnimatePresence } from "framer-motion";
 
 function LectureCard({ lecture, onUpdate }) {
   const navigate = useNavigate();
@@ -14,6 +16,8 @@ function LectureCard({ lecture, onUpdate }) {
   const [copied, setCopied] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [isViewingNotes, setIsViewingNotes] = useState(false);
   const feedbackCount = getFeedbackByLecture(lecture.id).length;
   const activeLiveSession = getActiveLiveSessionByLectureId(lecture.id);
 
@@ -186,9 +190,127 @@ function LectureCard({ lecture, onUpdate }) {
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 mt-auto pt-2">
-          <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm font-medium h-9" onClick={handleNavigate}>
-            Analytics
+        {/* Lecture Notes Section */}
+        <div className="border-t border-border/50 pt-3 mt-1 space-y-2 text-left">
+          <div className="flex items-center justify-between">
+            <span className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5 text-primary" />
+              Lecture Notes
+            </span>
+            {lecture.lectureNotes ? (
+              <span className="text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                Notes Available
+              </span>
+            ) : (
+              <span className="text-[11px] font-semibold bg-muted text-muted-foreground px-2 py-0.5 rounded-full border border-border/40">
+                No Notes
+              </span>
+            )}
+          </div>
+
+          {lecture.lectureNotes ? (
+            <div className="bg-muted/40 rounded-lg p-2.5 border border-border/50">
+              <p className="text-[13px] text-foreground/80 line-clamp-2 leading-relaxed">
+                {lecture.lectureNotes}
+              </p>
+              <div className="text-[10px] text-muted-foreground/75 font-mono mt-1.5 flex items-center justify-between">
+                <span>Last updated:</span>
+                <span>
+                  {lecture.updatedAt
+                    ? new Date(lecture.updatedAt).toLocaleString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : lecture.createdAt
+                    ? new Date(lecture.createdAt).toLocaleString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "Unknown"}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-2.5 bg-muted/20 border border-dashed border-border/60 rounded-lg">
+              <p className="text-[13px] text-muted-foreground/70 italic">
+                No notes attached to this session.
+              </p>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2">
+            {lecture.lectureNotes ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 text-xs h-8 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsViewingNotes(true);
+                  }}
+                >
+                  <Eye className="w-3.5 h-3.5 mr-1" />
+                  View Notes
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 text-xs h-8 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsEditingNotes(true);
+                  }}
+                >
+                  <Edit className="w-3.5 h-3.5 mr-1" />
+                  Edit Notes
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-xs h-8 border-dashed border-primary/40 text-primary hover:bg-primary/5 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditingNotes(true);
+                }}
+              >
+                <Plus className="w-3.5 h-3.5 mr-1" />
+                Add Notes
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 mt-auto pt-1">
+          <Button
+            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm font-medium h-9"
+            onClick={handleNavigate}
+          >
+            <div className="flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" x2="18" y1="20" y2="10" />
+                <line x1="12" x2="12" y1="20" y2="4" />
+                <line x1="6" x2="6" y1="20" y2="14" />
+              </svg>
+              Analytics
+            </div>
           </Button>
 
           {activeLiveSession ? (
@@ -238,8 +360,28 @@ function LectureCard({ lecture, onUpdate }) {
           </div>
         )}
       </CardContent>
+
+      <AnimatePresence>
+        {isEditingNotes && (
+          <LectureNotesEditor
+            lectureId={lecture.id}
+            initialNotes={lecture.lectureNotes || ""}
+            onClose={() => setIsEditingNotes(false)}
+            onSave={() => {
+              setIsEditingNotes(false);
+              onUpdate();
+            }}
+          />
+        )}
+        {isViewingNotes && (
+          <LectureNotesViewer
+            notes={lecture.lectureNotes || ""}
+            onClose={() => setIsViewingNotes(false)}
+          />
+        )}
+      </AnimatePresence>
     </Card>
   );
-}
+};
 
 export default LectureCard;

@@ -170,13 +170,15 @@ export const createLecture = (lectureData) => {
             code = Math.floor(100000 + Math.random() * 900000).toString();
         }
 
-        const newLecture = {
-            id: crypto.randomUUID(),
-            createdAt: new Date().toISOString(),
-            status: "active",
-            ...lectureData,
-            code,
-        };
+const newLecture = {
+    id: crypto.randomUUID(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    status: 'active',
+    lectureNotes: '',
+    ...lectureData,
+    code
+};
         localStorage.setItem("lecturePulse_sessions", JSON.stringify([...allSessions, newLecture]));
         return newLecture;
     } catch (error) {
@@ -207,184 +209,46 @@ export const deleteLecture = (lectureId) => {
     }
 };
 
-// Attendance Management
-export const addAttendance = (lectureId, studentId) => {
+export const updateLecture = (lectureId, updatedData) => {
     try {
         const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
-        const updatedSessions = allSessions.map((s) => {
+        const updatedSessions = allSessions.map(s => {
             if (s.id === lectureId) {
-                const attendance = s.attendance ? [...s.attendance] : [];
-                attendance.push({ studentId, timestamp: new Date().toISOString() });
-                return { ...s, attendance };
+                return {
+                    ...s,
+                    ...updatedData,
+                    updatedAt: new Date().toISOString()
+                };
             }
             return s;
         });
         localStorage.setItem("lecturePulse_sessions", JSON.stringify(updatedSessions));
+        return updatedSessions.find(s => s.id === lectureId) || null;
     } catch (error) {
-        console.error("Error adding attendance", error);
-    }
-};
-
-export const getAttendance = (lectureId) => {
-    try {
-        const allSessions = JSON.parse(localStorage.getItem("lecturePulse_sessions") || "[]");
-        const lecture = allSessions.find((s) => s.id === lectureId);
-        return lecture?.attendance || [];
-    } catch (error) {
-        console.error("Error getting attendance", error);
-        return [];
-    }
-};
-
-// Live Session Management
-export const getLiveSessions = () => {
-    try {
-        return JSON.parse(localStorage.getItem(LIVE_SESSIONS_KEY) || "[]");
-    } catch (error) {
-        console.error("Error getting live sessions", error);
-        return [];
-    }
-};
-
-export const getLiveSessionByLectureId = (lectureId) => {
-    try {
-        return getLiveSessions().find((session) => session.lectureId === lectureId) || null;
-    } catch (error) {
-        console.error("Error getting live session", error);
+        console.error("Error updating lecture", error);
         return null;
     }
 };
 
-export const getActiveLiveSessionByLectureId = (lectureId) => {
-    const liveSession = getLiveSessionByLectureId(lectureId);
-    return liveSession?.isLive ? liveSession : null;
+export const getLectureNotes = (lectureId) => {
+    const lecture = getLectureById(lectureId);
+    return lecture ? lecture.lectureNotes || "" : "";
 };
 
-const saveLiveSessions = (liveSessions) => {
-    localStorage.setItem(LIVE_SESSIONS_KEY, JSON.stringify(liveSessions));
-};
-
-export const startLiveSession = (lecture, teacher) => {
-    try {
-        const liveSessions = getLiveSessions();
-        const now = new Date().toISOString();
-        const existingIndex = liveSessions.findIndex((session) => session.lectureId === lecture.id);
-
-        const nextSession = {
-            id: lecture.id,
-            lectureId: lecture.id,
-            teacherId: lecture.teacherId,
-            teacherName: teacher?.name || lecture.teacherName || null,
-            lectureTopic: lecture.topic,
-            lectureSubject: lecture.subject,
-            isLive: true,
-            participants: [
-                {
-                    id: teacher?.id || lecture.teacherId,
-                    name: teacher?.name || lecture.teacherName || "Teacher",
-                    role: "teacher",
-                    joinedAt: now,
-                },
-            ],
-            startedAt: now,
-            endedAt: null,
-            chatMessages: [],
-        };
-
-        const updatedSessions = [...liveSessions];
-        if (existingIndex >= 0) {
-            updatedSessions[existingIndex] = {
-                ...updatedSessions[existingIndex],
-                ...nextSession,
-            };
-        } else {
-            updatedSessions.push(nextSession);
-        }
-
-        saveLiveSessions(updatedSessions);
-        return nextSession;
-    } catch (error) {
-        console.error("Error starting live session", error);
-        throw error;
+export const saveLectureNotes = (lectureId, notes) => {
+    if (typeof notes !== "string") {
+        throw new Error("Notes must be a string");
     }
+    const trimmedNotes = notes.trim();
+    if (!trimmedNotes) {
+        throw new Error("Notes cannot be empty");
+    }
+    if (trimmedNotes.length > 10000) {
+        throw new Error("Notes cannot exceed 10000 characters");
+    }
+    return updateLecture(lectureId, { lectureNotes: trimmedNotes });
 };
 
-export const endLiveSession = (lectureId) => {
-    try {
-        const liveSessions = getLiveSessions();
-        const updatedSessions = liveSessions.map((session) =>
-            session.lectureId === lectureId
-                ? {
-                      ...session,
-                      isLive: false,
-                      endedAt: new Date().toISOString(),
-                  }
-                : session
-        );
-        saveLiveSessions(updatedSessions);
-    } catch (error) {
-        console.error("Error ending live session", error);
-    }
-};
-
-export const joinLiveSession = (lectureId, participant) => {
-    try {
-        const liveSessions = getLiveSessions();
-        const now = new Date().toISOString();
-        const updatedSessions = liveSessions.map((session) => {
-            if (session.lectureId !== lectureId) {
-                return session;
-            }
-
-            const nextParticipant = {
-                ...participant,
-                joinedAt: participant.joinedAt || now,
-            };
-
-            return {
-                ...session,
-                participants: [
-                    ...(session.participants || []).filter((item) => item.id !== nextParticipant.id),
-                    nextParticipant,
-                ],
-            };
-        });
-        saveLiveSessions(updatedSessions);
-    } catch (error) {
-        console.error("Error joining live session", error);
-    }
-};
-
-export const leaveLiveSession = (lectureId, participantId) => {
-    try {
-        const liveSessions = getLiveSessions();
-        const updatedSessions = liveSessions.map((session) =>
-            session.lectureId === lectureId
-                ? {
-                      ...session,
-                      participants: (session.participants || []).filter((participant) => participant.id !== participantId),
-                  }
-                : session
-        );
-        saveLiveSessions(updatedSessions);
-    } catch (error) {
-        console.error("Error leaving live session", error);
-    }
-};
-
-export const appendLiveChatMessage = (lectureId, message) => {
-    try {
-        const liveSessions = getLiveSessions();
-        const updatedSessions = liveSessions.map((session) =>
-            session.lectureId === lectureId
-                ? {
-                      ...session,
-                      chatMessages: [...(session.chatMessages || []), message],
-                  }
-                : session
-        );
-        saveLiveSessions(updatedSessions);
-    } catch (error) {
-        console.error("Error appending live chat message", error);
-    }
+export const updateLectureNotes = (lectureId, notes) => {
+    return saveLectureNotes(lectureId, notes);
 };
