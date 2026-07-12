@@ -10,7 +10,18 @@ import { getCurrentTeacher, getLecturesByTeacher, getFeedbackByLecture } from "@
 import CreateLectureDialog from "@/components/CreateLectureDialog";
 import LectureCard from "@/components/LectureCard";
 import PollCard from "@/components/PollCard";
-import CreatePollDialog from "@/components/CreatePollDialog";
+import {
+  BarChart3,
+  BookOpen,
+  GraduationCap,
+  LogOut,
+  Plus,
+  Search,
+  User,
+  Sparkles,
+  Star,
+} from "lucide-react";
+import { toast } from "sonner";
 
 export default function Dashboard() {
   const { theme, toggleTheme } = useTheme();
@@ -22,7 +33,8 @@ export default function Dashboard() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [polls, setPolls] = useState([]);
   const [showPollDialog, setShowPollDialog] = useState(false);
-  const [refreshTick, setRefreshTick] = useState(0);
+  const [bookmarkFilter, setBookmarkFilter] = useState('all');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const currentTeacher = getCurrentTeacher();
@@ -67,15 +79,19 @@ export default function Dashboard() {
     return totalAttendance ? Math.round((totalFeedback / totalAttendance) * 100) : 0;
   }, [totalAttendance, totalFeedback]);
 
-  const filteredLectures = lectures
-    .filter((lecture) => {
-      const matchesSearch = [lecture.topic, lecture.subject, lecture.code]
-        .filter(Boolean)
-        .some((value) => value.toLowerCase().includes(searchTerm.toLowerCase()));
+        const matchesBookmark =
+          bookmarkFilter === 'all' ||
+          (bookmarkFilter === 'bookmarked' && lecture.bookmarked);
 
-      if (!matchesSearch) {
-        return false;
-      }
+        return matchesSearch && matchesStatus && matchesBookmark;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0);
+        const dateB = new Date(b.createdAt || 0);
+
+        return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+      });
+  }, [lectures, searchTerm, statusFilter, bookmarkFilter, sortOrder]);
 
       if (statusFilter === "active") {
         return lecture.isActive;
@@ -247,11 +263,41 @@ export default function Dashboard() {
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
             </select>
-            <Button variant="outline" size="sm" onClick={() => {
-              setSearchTerm("");
-              setStatusFilter("all");
-              setSortOrder("newest");
-            }}>
+            <div className="flex bg-muted/50 p-1 rounded-lg border border-border/50">
+              <button
+                type="button"
+                onClick={() => setBookmarkFilter('all')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                  bookmarkFilter === 'all'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                All Lectures
+              </button>
+              <button
+                type="button"
+                onClick={() => setBookmarkFilter('bookmarked')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1 cursor-pointer ${
+                  bookmarkFilter === 'bookmarked'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Star className="w-3 h-3 fill-current text-amber-500" />
+                Bookmarked Only
+              </button>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+                setSortOrder('newest');
+                setBookmarkFilter('all');
+              }}
+            >
               Clear Filters
             </Button>
             <Button onClick={() => setIsCreateOpen(true)}>
@@ -266,49 +312,62 @@ export default function Dashboard() {
         </div>
 
         {lectures.length === 0 ? (
-          <Card className="border-dashed border-2 border-muted">
-            <CardContent className="flex flex-col items-center justify-center py-20 px-6 text-center gap-6">
-              <div className="relative">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-cyan-500/20 flex items-center justify-center ring-1 ring-emerald-500/20">
-                  <BookOpen className="w-9 h-9 text-emerald-500" />
-                </div>
-                <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-md shadow-emerald-500/30">
-                  <Sparkles className="w-3 h-3 text-white" />
-                </div>
-              </div>
-              <div className="space-y-2 max-w-sm">
-                <h3 className="text-xl font-semibold text-foreground">No lectures yet</h3>
-                <p className="text-base text-muted-foreground leading-relaxed">
-                  Get started by creating your first lecture. Share a session code with your students and collect real-time feedback instantly.
-                </p>
-              </div>
-              <Button
-                onClick={() => setIsCreateOpen(true)}
-                size="lg"
-                className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white hover:from-emerald-600 hover:to-cyan-600 shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:shadow-emerald-500/40 hover:-translate-y-0.5"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                Create Your First Lecture
-              </Button>
-              <p className="text-xs text-muted-foreground/60">
-                Students can join using a 6-digit session code - no signup required.
-              </p>
-            </CardContent>
-          </Card>
-        ) : filteredLectures.length === 0 ? (
-          <Card className="border-dashed border-2 border-muted">
-            <CardContent className="flex flex-col items-center justify-center py-16 px-6 text-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center">
-                <Search className="w-7 h-7 text-muted-foreground" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-xl font-medium text-foreground">No lectures found</h3>
-                <p className="text-base text-muted-foreground">
-                  No lectures match your current filters. Try adjusting your search or clear all filters.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+         <Card className="border-dashed border-2 border-muted">
+  <CardContent className="flex flex-col items-center justify-center py-20 px-6 text-center gap-6">
+    <div className="relative">
+      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-cyan-500/20 flex items-center justify-center ring-1 ring-emerald-500/20">
+        <BookOpen className="w-9 h-9 text-emerald-500" />
+      </div>
+      <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-md shadow-emerald-500/30">
+        <Sparkles className="w-3 h-3 text-white" />
+      </div>
+    </div>
+    <div className="space-y-2 max-w-sm">
+      <h3 className="text-xl font-semibold text-foreground">No lectures yet</h3>
+      <p className="text-base text-muted-foreground leading-relaxed">
+        Get started by creating your first lecture. Share a session code with
+        your students and collect real-time feedback instantly.
+      </p>
+    </div>
+    <Button
+      onClick={() => setIsCreateOpen(true)}
+      size="lg"
+      className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white hover:from-emerald-600 hover:to-cyan-600 shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:shadow-emerald-500/40 hover:-translate-y-0.5"
+    >
+      <Plus className="w-5 h-5 mr-2" />
+      Create Your First Lecture
+    </Button>
+    <p className="text-xs text-muted-foreground/60">
+      Students can join using a 6-digit session code — no signup required.
+    </p>
+  </CardContent>
+</Card>
+) : filteredLectures.length === 0 ? (
+<Card className="border-dashed border-2 border-muted">
+  <CardContent className="flex flex-col items-center justify-center py-16 px-6 text-center gap-4">
+    <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center">
+      <Search className="w-7 h-7 text-muted-foreground" />
+    </div>
+    <div className="space-y-1">
+      <h3 className="text-xl font-medium text-foreground">
+        {bookmarkFilter === 'bookmarked' ? 'No bookmarked lectures found' : 'No lectures found'}
+      </h3>
+      <p className="text-base text-muted-foreground">
+        {bookmarkFilter === 'bookmarked'
+          ? 'No bookmarked lectures match your current filters.'
+          : 'No lectures match your current filters.'}{" "}
+        Try adjusting your search or{" "}
+        <button
+          onClick={() => { setSearchTerm(''); setStatusFilter('all'); setSortOrder('newest'); setBookmarkFilter('all'); }}
+          className="text-primary underline-offset-2 hover:underline focus:outline-none cursor-pointer"
+        >
+          clear all filters
+        </button>
+        .
+      </p>
+    </div>
+  </CardContent>
+</Card>
         ) : (
           <div className="space-y-6">
             {activeLectures.length > 0 && (

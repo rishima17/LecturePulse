@@ -312,7 +312,18 @@ useEffect(() => {
           </Button>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-xl font-bold text-foreground">{lecture.topic}</h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl font-bold text-foreground">{lecture.topic}</h1>
+                {lecture.bookmarked ? (
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                    ⭐ Bookmarked
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
+                    ☆ Not Bookmarked
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground">
                 {lecture.subject} • {lecture.duration} minutes
               </p>

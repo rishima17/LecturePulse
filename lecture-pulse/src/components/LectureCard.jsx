@@ -9,6 +9,7 @@ import { QRCodeSVG } from "qrcode.react";
 import LectureNotesEditor from "@/components/LectureNotesEditor";
 import LectureNotesViewer from "@/components/LectureNotesViewer";
 import { AnimatePresence } from "framer-motion";
+import BookmarkButton from "@/components/BookmarkButton";
 
 function LectureCard({ lecture, onUpdate }) {
   const navigate = useNavigate();
@@ -101,18 +102,21 @@ function LectureCard({ lecture, onUpdate }) {
   return (
     <Card className="rounded-xl border shadow-sm hover:shadow-md transition-all duration-300 group overflow-hidden bg-card text-card-foreground">
       <CardContent className="p-5 flex flex-col h-full gap-4">
+        {/* Header */}
         <div className="flex justify-between items-start gap-3">
-          <div className="space-y-1">
-            <h3 className="font-bold text-lg leading-tight text-foreground">{lecture.topic}</h3>
+          <div className="space-y-1 flex-1">
+            <h3 className="font-bold text-lg leading-tight text-foreground">
+              {lecture.topic}
+            </h3>
             <p className="text-sm text-muted-foreground">{lecture.subject}</p>
           </div>
-          <div className="flex flex-col items-end gap-2">
-            {lecture.isLive ? (
-              <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 text-xs font-semibold rounded-full inline-flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Live
-              </span>
-            ) : lecture.isActive ? (
+          <div className="flex items-center gap-2 shrink-0">
+            <BookmarkButton
+              lectureId={lecture.id}
+              bookmarked={lecture.bookmarked}
+              onToggle={onUpdate}
+            />
+            {lecture.isActive ? (
               <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 text-xs font-semibold rounded-full">
                 Active
               </span>
