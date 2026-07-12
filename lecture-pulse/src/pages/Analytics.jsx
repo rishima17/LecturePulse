@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getLectureById, getFeedbackByLecture, getCurrentTeacher } from '@/utils/storage';
 import { calculateAnalytics, getOverallEffectiveness, getEffectivenessLabel } from '@/utils/analytics';
 import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw, FileText, Eye, Edit, Plus, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw, FileText, Eye, Edit, Plus } from 'lucide-react';
 import UnderstandingChart from '@/components/charts/UnderstandingChart';
 import AttentionChart from '@/components/charts/AttentionChart';
 import ConfusionChart from '@/components/charts/ConfusionChart';
@@ -343,6 +344,79 @@ useEffect(() => {
       </Card>
     );
   };
+
+  return (
+    <div className="min-h-screen bg-background pb-12">
+      {/* Header */}
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate('/dashboard')}
+            className="mb-2"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl font-bold text-foreground">{lecture.topic}</h1>
+                {lecture.bookmarked ? (
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                    ⭐ Bookmarked
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
+                    ☆ Not Bookmarked
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {lecture.subject} • {lecture.duration} minutes
+              </p>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 pt-2 border-t border-border/20">
+            {lecture.lectureNotes ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 text-xs h-9 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() => setIsViewingNotes(true)}
+                >
+                  <Eye className="w-4 h-4 mr-1.5" />
+                  View Notes
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="flex-1 text-xs h-9 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() => setIsEditingNotes(true)}
+                >
+                  <Edit className="w-4 h-4 mr-1.5" />
+                  Edit Notes
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                className="w-full text-xs h-9 cursor-pointer border border-dashed border-primary/30 focus-visible:ring-2 focus-visible:ring-ring"
+                onClick={() => setIsEditingNotes(true)}
+              >
+                <Plus className="w-4 h-4 mr-1.5" />
+                Add Lecture Notes
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
   
   const getWidgetSpanClass = (widgetId) => {
     switch (widgetId) {
@@ -455,52 +529,172 @@ useEffect(() => {
                 <FeedbackTimeline data={analytics.timeline} />
               </CardContent>
             </Card>
+      <main className="container mx-auto px-4 py-8">
+        {analytics.totalResponses === 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <div className="lg:col-span-2">
+              <Card variant="glass" className="text-center py-12 border-dashed">
+                <CardContent>
+                  <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-foreground mb-2">No feedback yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Share the session code <span className="font-mono font-bold text-primary text-lg">{lecture.code}</span> with your students
+                  </p>
+                  {/* Optional: Add a button to simulate student feedback for testing */}
+                  <Button variant="hero" onClick={loadData}>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Check for responses
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="lg:col-span-1">
+              {renderNotesCard()}
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            {/* Left Main Content */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Overview Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card variant="gradient">
+                  <CardContent className="p-6 text-center">
+                    <div className={`text-4xl font-bold ${effectivenessInfo.color}`}>
+                      {effectiveness}%
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">Overall Effectiveness</p>
+                    <p className={`text-xs font-medium mt-1 ${effectivenessInfo.color}`}>
+                      {effectivenessInfo.label}
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card variant="gradient">
+                  <CardContent className="p-6 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <Users className="w-5 h-5 text-primary" />
+                      <span className="text-4xl font-bold text-foreground">{analytics.totalResponses}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">Total Responses</p>
+                  </CardContent>
+                </Card>
+                <Card variant="gradient">
+                  <CardContent className="p-6 text-center">
+                    <div className="text-4xl font-bold text-chart-understanding">
+                      {analytics.understandingScore}%
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">Understanding Score</p>
+                  </CardContent>
+                </Card>
+                <Card variant="gradient">
+                  <CardContent className="p-6 text-center">
+                    <div className="text-4xl font-bold text-chart-attention">
+                      {analytics.attentionScore}%
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">Attention Score</p>
+                  </CardContent>
+                </Card>
+              </div>
 
-            {/* Insights & Suggestions */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Common Keywords */}
-              {analytics.commonKeywords.length > 0 && (
+              {/* Charts Row */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 text-warning" />
-                      Common Keywords from Comments
-                    </CardTitle>
+                    <CardTitle className="text-base">Understanding Distribution</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {analytics.commonKeywords.map((keyword, i) => (
-                        <span 
-                          key={i}
-                          className="px-3 py-1 bg-yellow-500/10 text-yellow-600 rounded-full text-sm font-medium"
-                        >
-                          {keyword}
-                        </span>
-                      ))}
+                    <div ref={understandingRef}>
+                      <UnderstandingChart data={analytics.understandingDistribution} />
                     </div>
                   </CardContent>
                 </Card>
-              )}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Attention Levels</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div ref={attentionRef}>
+                      <AttentionChart data={analytics.attentionDistribution} />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Confusion Points</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div ref={confusionRef}>
+                      <ConfusionChart data={analytics.confusionPointDistribution} />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-              {/* Suggestions */}
-              <Card className={analytics.commonKeywords.length === 0 ? 'lg:col-span-2' : ''}>
+              {/* Feedback Timeline */}
+              <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Lightbulb className="w-4 h-4 text-primary" />
-                    Improvement Suggestions
+                    <TrendingUp className="w-4 h-4 text-primary" />
+                    Engagement Timeline
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-3">
-                    {analytics.suggestions.map((suggestion, i) => (
-                      <li key={i} className="flex items-start gap-3">
-                        <TrendingUp className="w-4 h-4 text-primary mt-1 shrink-0" />
-                        <span className="text-sm text-foreground">{suggestion}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <FeedbackTimeline data={analytics.timeline} />
                 </CardContent>
               </Card>
+
+              {/* Insights & Suggestions */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Common Keywords */}
+                {analytics.commonKeywords.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-warning" />
+                        Common Keywords from Comments
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {analytics.commonKeywords.map((keyword, i) => (
+                          <span 
+                            key={i}
+                            className="px-3 py-1 bg-yellow-500/10 text-yellow-600 rounded-full text-sm font-medium"
+                          >
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Suggestions */}
+                <Card className={analytics.commonKeywords.length === 0 ? 'lg:col-span-2' : ''}>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Lightbulb className="w-4 h-4 text-primary" />
+                      Improvement Suggestions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-3">
+                      {analytics.suggestions.map((suggestion, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <TrendingUp className="w-4 h-4 text-primary mt-1 shrink-0" />
+                          <span className="text-sm text-foreground">{suggestion}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* Right Column Sidebar */}
+            <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
+              {renderNotesCard()}
+              <AISummaryCard lecture={lecture} analytics={analytics} feedback={feedback} />
             </div>
           </div>
         );
