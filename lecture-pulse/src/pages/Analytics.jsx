@@ -776,6 +776,86 @@ useEffect(() => {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const visibleWidgets = preferences.widgetOrder.filter(id => !preferences.hiddenWidgets.includes(id));
+
+  return (
+    <div className="min-h-screen bg-background pb-12">
+      {/* Header */}
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate('/dashboard')}
+            className="mb-2"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl font-bold text-foreground">{lecture.topic}</h1>
+                {lecture.bookmarked ? (
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                    ⭐ Bookmarked
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
+                    ☆ Not Bookmarked
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {lecture.subject} • {lecture.duration} minutes
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setIsCustomizerOpen(true)}>
+                <SlidersHorizontal className="w-4 h-4 mr-2" />
+                Customize
+              </Button>
+              <Button variant="outline" size="sm" onClick={loadData}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownloadCSV}>
+                Export CSV
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
+                Download PDF Report
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        {analytics.totalResponses === 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <div className="lg:col-span-2">
+              <Card variant="glass" className="text-center py-12 border-dashed">
+                <CardContent>
+                  <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-foreground mb-2">No feedback yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Share the session code <span className="font-mono font-bold text-primary text-lg">{lecture.code}</span> with your students
+                  </p>
+                  {/* Optional: Add a button to simulate student feedback for testing */}
+                  <Button variant="hero" onClick={loadData}>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Check for responses
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
             <div className="lg:col-span-1">
               {renderNotesCard()}
             </div>

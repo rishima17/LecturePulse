@@ -10,6 +10,7 @@ import { getCurrentTeacher, getLecturesByTeacher, getFeedbackByLecture } from "@
 import CreateLectureDialog from "@/components/CreateLectureDialog";
 import LectureCard from "@/components/LectureCard";
 import PollCard from "@/components/PollCard";
+import TemplateManager from "@/components/TemplateManager";
 import {
   BarChart3,
   BookOpen,
@@ -31,6 +32,7 @@ export default function Dashboard() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("newest");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
   const [polls, setPolls] = useState([]);
   const [showPollDialog, setShowPollDialog] = useState(false);
   const [bookmarkFilter, setBookmarkFilter] = useState('all');
@@ -300,7 +302,18 @@ export default function Dashboard() {
             >
               Clear Filters
             </Button>
-            <Button onClick={() => setIsCreateOpen(true)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsTemplatesOpen(true)}
+              className="border-primary/30 text-foreground hover:bg-primary/10 cursor-pointer"
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              Templates
+            </Button>
+            <Button
+              onClick={() => setIsCreateOpen(true)}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
               <Plus className="w-4 h-4 mr-2" />
               Create Lecture
             </Button>
@@ -433,6 +446,10 @@ export default function Dashboard() {
         onOpenChange={setIsCreateOpen}
         teacherId={teacher.id}
         onCreated={handleLectureCreated}
+      />
+      <TemplateManager
+        open={isTemplatesOpen}
+        onOpenChange={setIsTemplatesOpen}
       />
     </div>
   );
