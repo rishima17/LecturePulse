@@ -10,6 +10,7 @@ import AttentionChart from '@/components/charts/AttentionChart';
 import ConfusionChart from '@/components/charts/ConfusionChart';
 import FeedbackTimeline from '@/components/charts/FeedbackTimeline';
 import AISummaryCard from '@/components/AISummaryCard';
+import ResourceBoard from '@/components/ResourceBoard/ResourceBoard';
 import { generateLecturePDF } from "@/utils/pdfReport";
 import { generateLectureCSV } from "@/utils/csvReport";
 import { useRef } from "react";
@@ -366,6 +367,7 @@ useEffect(() => {
               </Card>
             </div>
             <AISummaryCard lecture={lecture} analytics={analytics} feedback={feedback} />
+            <ResourceBoard sessionCode={lecture.code} isTeacher={true} />
           </div>
         )}
       </main>
