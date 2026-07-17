@@ -34,6 +34,7 @@ import {
   addAttendance
 } from "@/utils/storage";
 import { emitFeedback } from "@/lib/socket";
+import JournalSection from "@/components/journal/JournalSection";
 
 const UnderstandingOption = ({ value, icon: Icon, label, color, understanding, setUnderstanding }) => (
   <motion.button
@@ -495,6 +496,7 @@ export default function Student() {
                   onClick={() => {
                     setStep("code");
                     setSessionCode("");
+                    setActiveSession(null);
                     setUnderstanding(null);
                     setAttention(null);
                     setConfusionTime(null);
@@ -508,6 +510,14 @@ export default function Student() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {activeSession && step !== "code" && (
+          <JournalSection 
+            key={activeSession.code}
+            sessionCode={activeSession.code} 
+            activeSession={activeSession} 
+          />
+        )}
       </div>
     </div>
   );
