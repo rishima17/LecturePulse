@@ -6,6 +6,7 @@ import { createLecture } from "@/utils/storage";
 import { toast } from "sonner";
 import { X, Loader2 } from "lucide-react";
 import { validateCode } from "@/lib/socket";
+import TemplateSelector from "@/components/TemplateSelector";
 
 const CreateLectureDialog = ({ open, onOpenChange, teacherId, onCreated }) => {
   const [loading, setLoading] = useState(false);
@@ -13,6 +14,7 @@ const CreateLectureDialog = ({ open, onOpenChange, teacherId, onCreated }) => {
     subject: "",
     topic: "",
     duration: "60",
+    lectureNotes: "",
   });
 
   if (!open) return null;
@@ -77,9 +79,10 @@ const CreateLectureDialog = ({ open, onOpenChange, teacherId, onCreated }) => {
         subject: formData.subject,
         topic: formData.topic,
         duration: parseInt(formData.duration),
+        lectureNotes: formData.lectureNotes || "",
       });
       toast.success(`Lecture created successfully! Code: ${code}`);
-      setFormData({ subject: "", topic: "", duration: "60" });
+      setFormData({ subject: "", topic: "", duration: "60", lectureNotes: "" });
       onCreated();
     } catch (err) {
       console.error(err);
@@ -105,6 +108,31 @@ const CreateLectureDialog = ({ open, onOpenChange, teacherId, onCreated }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className="space-y-2">
+            <Label>Apply Template (Optional)</Label>
+            <TemplateSelector
+              onSelectTemplate={(template) => {
+                if (template) {
+                  setFormData((prev) => ({
+                    ...prev,
+                    subject: template.subject || "",
+                    topic: template.topic || "",
+                    lectureNotes: template.defaultNotes || "",
+                  }));
+                  toast.success(`Applied template "${template.name}"`);
+                } else {
+                  setFormData((prev) => ({
+                    ...prev,
+                    subject: "",
+                    topic: "",
+                    lectureNotes: "",
+                  }));
+                  toast.success("Cleared template prefill");
+                }
+              }}
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="subject">Subject</Label>
             <Input
