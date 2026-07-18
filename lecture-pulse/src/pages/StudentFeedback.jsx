@@ -521,6 +521,11 @@ export default function Student() {
               activeSession={activeSession} 
             />
           </>
+          <JournalSection 
+            key={activeSession.code}
+            sessionCode={activeSession.code} 
+            activeSession={activeSession} 
+          />
         )}
       </div>
     </div>
