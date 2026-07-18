@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Trash2, Check, QrCode, X, Download } from "lucide-react";
-import { deleteLecture, getFeedbackByLecture } from "@/utils/storage";
+import { deleteLecture, getFeedbackByLecture, updateLectureStatus } from "@/utils/storage";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 
@@ -83,9 +83,24 @@ const LectureCard = ({ lecture, onUpdate }) => {
             <p className="text-sm text-muted-foreground">{lecture.subject}</p>
           </div>
           {lecture.isActive ? (
-            <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 text-xs font-semibold rounded-full">
-              Active
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 text-xs font-semibold rounded-full">
+                Active
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 px-2 text-[10px] text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateLectureStatus(lecture.id, 'completed');
+                  toast.success("Lecture ended");
+                  onUpdate();
+                }}
+              >
+                End
+              </Button>
+            </div>
           ) : (
             <span className="px-3 py-1 bg-muted text-muted-foreground text-xs font-semibold rounded-full">
               Completed

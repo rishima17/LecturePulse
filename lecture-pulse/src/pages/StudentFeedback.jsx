@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,12 +30,14 @@ import { toast } from "sonner";
 import { 
   getOrCreateStudentId, 
   hasStudentSubmitted, 
-  submitFeedback as saveFeedbackToStorage 
+  submitFeedback as saveFeedbackToStorage,
+  getLectureById
 } from "@/utils/storage";
 import { emitFeedback } from "@/lib/socket";
 import JournalSection from "@/components/journal/JournalSection";
 import ResourceBoard from "@/components/ResourceBoard/ResourceBoard";
 import EmojiReactionBar from "@/components/EmojiReactionBar";
+import MoodMeter from "@/components/MoodMeter/MoodMeter";
 
 const UnderstandingOption = ({ value, icon: Icon, label, color, understanding, setUnderstanding }) => (
   <motion.button
@@ -57,7 +59,7 @@ const UnderstandingOption = ({ value, icon: Icon, label, color, understanding, s
 
 export default function Student() {
   const { theme, toggleTheme } = useTheme();
-  const [step, setStep] = useState("code"); // code, feedback, success
+  const [step, setStep] = useState("code"); // code, feedback, success, mood-meter
   const [sessionCode, setSessionCode] = useState("");
   const [activeSession, setActiveSession] = useState(null);
   const [error, setError] = useState("");
@@ -68,6 +70,41 @@ export default function Student() {
   const [attention, setAttention] = useState(null); // 'high', 'medium', 'low'
   const [confusionTime, setConfusionTime] = useState(null); // 'early', 'mid', 'late'
   const [comment, setComment] = useState("");
+
+  // Poll for lecture status (active vs completed) when in feedback or success step
+  useEffect(() => {
+    if (!activeSession) return;
+
+    const checkLectureStatus = () => {
+      try {
+        const latestLecture = getLectureById(activeSession.id);
+        if (latestLecture) {
+          if (latestLecture.status === "completed") {
+            setStep("mood-meter");
+          }
+        }
+      } catch (err) {
+        console.error("Error monitoring lecture status", err);
+      }
+    };
+
+    // Initial check
+    checkLectureStatus();
+
+    const interval = setInterval(checkLectureStatus, 2000);
+
+    const handleStorageChange = (e) => {
+      if (e.key === "lecturePulse_sessions") {
+        checkLectureStatus();
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [activeSession]);
 
   const verifyCode = (e) => {
     e.preventDefault();
@@ -85,14 +122,20 @@ export default function Student() {
         localStorage.getItem("lecturePulse_sessions") || "[]",
       );
       const session = sessions.find(
-        (s) => s.code === sessionCode && s.status === "active",
+        (s) => s.code === sessionCode
       );
 
       if (session) {
         setActiveSession(session);
-        setStep("feedback");
+        if (session.status === "active") {
+          setStep("feedback");
+        } else if (session.status === "completed") {
+          setStep("mood-meter");
+        } else {
+          toast.error("This session is not available.");
+        }
       } else {
-        toast.error("Invalid or inactive session code.");
+        toast.error("Invalid session code.");
       }
       setLoading(false);
     }, 600);
@@ -451,9 +494,31 @@ export default function Student() {
               </Card>
             </motion.div>
           )}
+
+          {step === "mood-meter" && (
+            <motion.div
+              key="mood-meter"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+            >
+              <MoodMeter
+                sessionCode={activeSession?.code}
+                onBackToHome={() => {
+                  setStep("code");
+                  setSessionCode("");
+                  setActiveSession(null);
+                  setUnderstanding(null);
+                  setAttention(null);
+                  setConfusionTime(null);
+                  setComment("");
+                }}
+              />
+            </motion.div>
+          )}
         </AnimatePresence>
 
-        {activeSession && step !== "code" && (
+        {activeSession && step !== "code" && step !== "mood-meter" && (
           <>
             <EmojiReactionBar sessionCode={activeSession.code} lectureId={activeSession.id} />
             <ResourceBoard sessionCode={activeSession.code} isTeacher={false} />

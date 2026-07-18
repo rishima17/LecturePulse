@@ -2,9 +2,9 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getLectureById, getFeedbackByLecture, getCurrentTeacher } from '@/utils/storage';
+import { getLectureById, getFeedbackByLecture, getCurrentTeacher, updateLectureStatus } from '@/utils/storage';
 import { calculateAnalytics, getOverallEffectiveness, getEffectivenessLabel } from '@/utils/analytics';
-import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw, StopCircle } from 'lucide-react';
 import UnderstandingChart from '@/components/charts/UnderstandingChart';
 import AttentionChart from '@/components/charts/AttentionChart';
 import ConfusionChart from '@/components/charts/ConfusionChart';
@@ -17,12 +17,16 @@ import { generateLectureCSV } from "@/utils/csvReport";
 import { useRef } from "react";
 import html2canvas from "html2canvas";
 import { socket, joinLectureRoom } from "@/lib/socket";
+import { toast } from "sonner";
+import { getMoods } from "@/utils/moodStorage";
+import MoodSummaryCard from "@/components/MoodMeter/MoodSummaryCard";
 
 const Analytics = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const [lecture, setLecture] = useState(null);
   const [analytics, setAnalytics] = useState(null);
+  const [moods, setMoods] = useState(null);
   const understandingRef = useRef(null);
   const attentionRef = useRef(null);
   const confusionRef = useRef(null);
@@ -58,6 +62,9 @@ const Analytics = () => {
       return;
     }
     setLecture(foundLecture);
+    const moodsData = getMoods(foundLecture.code);
+    setMoods(moodsData);
+    
     // Mock feedback data generation if empty, for demonstration purposes in dev
     let feedback = getFeedbackByLecture(sessionId);
     
@@ -84,7 +91,7 @@ useEffect(() => {
 
     // Listen for storage changes from other tabs
     const handleStorageChange = (e) => {
-      if (e.key === "lecturePulse_feedback") {
+      if (e.key === "lecturePulse_feedback" || (e.key && e.key.startsWith("moods_"))) {
         loadData();
       }
     };
@@ -115,7 +122,7 @@ useEffect(() => {
 
   useEffect(() => {
     const onStorage = (e) => {
-      if (e.key === 'lecturePulse_feedback') {
+      if (e.key === 'lecturePulse_feedback' || (e.key && e.key.startsWith('moods_'))) {
         loadData();
       }
     };
@@ -124,11 +131,17 @@ useEffect(() => {
       loadData();
     };
 
+    const onMoodUpdated = () => {
+      loadData();
+    };
+
     window.addEventListener('storage', onStorage);
     window.addEventListener('feedback-updated', onFeedbackUpdated);
+    window.addEventListener('mood-updated', onMoodUpdated);
     return () => {
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('feedback-updated', onFeedbackUpdated);
+      window.removeEventListener('mood-updated', onMoodUpdated);
     };
   }, [loadData]);
 
@@ -142,6 +155,18 @@ useEffect(() => {
       </div>
     );
   }
+
+  const handleEndLecture = () => {
+    try {
+      updateLectureStatus(lecture.id, 'completed');
+      setLecture(prev => ({ ...prev, status: 'completed' }));
+      toast.success("Lecture ended successfully");
+      loadData();
+    } catch (error) {
+      console.error("Error ending lecture:", error);
+      toast.error("Failed to end lecture");
+    }
+  };
 
   const effectiveness = getOverallEffectiveness(analytics);
   const effectivenessInfo = getEffectivenessLabel(effectiveness);
@@ -202,6 +227,12 @@ useEffect(() => {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              {lecture.status === 'active' && (
+                <Button variant="destructive" size="sm" onClick={handleEndLecture}>
+                  <StopCircle className="w-4 h-4 mr-2" />
+                  End Lecture
+                </Button>
+              )}
               <Button variant="outline" size="sm" onClick={loadData}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh
@@ -275,6 +306,9 @@ useEffect(() => {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Mood Summary */}
+            <MoodSummaryCard moods={moods} />
 
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
