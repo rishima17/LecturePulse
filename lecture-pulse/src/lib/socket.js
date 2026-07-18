@@ -48,3 +48,10 @@ export const emitFeedback = (lectureId, feedback) => {
     socket.emit('submit-feedback', { lectureId, feedback });
   }
 };
+
+export const emitReaction = (lectureId, reactionType) => {
+  if (socket.connected) {
+    socket.emit('submit-reaction', { lectureId, reactionType });
+  }
+};
+

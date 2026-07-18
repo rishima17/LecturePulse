@@ -11,6 +11,7 @@ import ConfusionChart from '@/components/charts/ConfusionChart';
 import FeedbackTimeline from '@/components/charts/FeedbackTimeline';
 import AISummaryCard from '@/components/AISummaryCard';
 import ResourceBoard from '@/components/ResourceBoard/ResourceBoard';
+import TeacherReactionPanel from '@/components/TeacherReactionPanel';
 import { generateLecturePDF } from "@/utils/pdfReport";
 import { generateLectureCSV } from "@/utils/csvReport";
 import { useRef } from "react";
@@ -110,7 +111,7 @@ useEffect(() => {
         socket.off('feedback-updated', handleRealtimeFeedback);
       };
     }
-  }, [sessionId, loadData]);
+  }, [sessionId, lecture, loadData]);
 
   useEffect(() => {
     const onStorage = (e) => {
@@ -217,6 +218,7 @@ useEffect(() => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        <TeacherReactionPanel sessionCode={lecture.code} lectureId={lecture.id} />
         {analytics.totalResponses === 0 ? (
           <Card variant="glass" className="text-center py-12 border-dashed">
             <CardContent>
