@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getLectureById, getFeedbackByLecture, getCurrentTeacher, updateLectureStatus } from '@/utils/storage';
+import { getLectureById, getFeedbackByLecture, getCurrentTeacher } from '@/utils/storage';
 import { calculateAnalytics, getOverallEffectiveness, getEffectivenessLabel } from '@/utils/analytics';
 import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw, StopCircle } from 'lucide-react';
 import UnderstandingChart from '@/components/charts/UnderstandingChart';
@@ -17,9 +17,11 @@ import { generateLectureCSV } from "@/utils/csvReport";
 import { useRef } from "react";
 import html2canvas from "html2canvas";
 import { socket, joinLectureRoom } from "@/lib/socket";
-import { toast } from "sonner";
 import { getMoods } from "@/utils/moodStorage";
 import MoodSummaryCard from "@/components/MoodMeter/MoodSummaryCard";
+import ExitTicketDialog from "@/components/ExitTicket/ExitTicketDialog";
+import ExitTicketAnalytics from "@/components/ExitTicket/ExitTicketAnalytics";
+import { getExitTicket, getExitTicketResponses } from "@/utils/exitTicketStorage";
 
 const Analytics = () => {
   const { sessionId } = useParams();
@@ -27,6 +29,9 @@ const Analytics = () => {
   const [lecture, setLecture] = useState(null);
   const [analytics, setAnalytics] = useState(null);
   const [moods, setMoods] = useState(null);
+  const [exitTicket, setExitTicket] = useState(null);
+  const [exitTicketResponses, setExitTicketResponses] = useState([]);
+  const [isExitTicketOpen, setIsExitTicketOpen] = useState(false);
   const understandingRef = useRef(null);
   const attentionRef = useRef(null);
   const confusionRef = useRef(null);
@@ -65,6 +70,11 @@ const Analytics = () => {
     const moodsData = getMoods(foundLecture.code);
     setMoods(moodsData);
     
+    const ticket = getExitTicket(foundLecture.code);
+    setExitTicket(ticket);
+    const ticketResponses = getExitTicketResponses(foundLecture.code);
+    setExitTicketResponses(ticketResponses);
+    
     // Mock feedback data generation if empty, for demonstration purposes in dev
     let feedback = getFeedbackByLecture(sessionId);
     
@@ -91,7 +101,11 @@ useEffect(() => {
 
     // Listen for storage changes from other tabs
     const handleStorageChange = (e) => {
-      if (e.key === "lecturePulse_feedback" || (e.key && e.key.startsWith("moods_"))) {
+      if (
+        e.key === "lecturePulse_feedback" || 
+        (e.key && e.key.startsWith("moods_")) ||
+        (e.key && e.key.startsWith("exitTicketResponses_"))
+      ) {
         loadData();
       }
     };
@@ -122,7 +136,11 @@ useEffect(() => {
 
   useEffect(() => {
     const onStorage = (e) => {
-      if (e.key === 'lecturePulse_feedback' || (e.key && e.key.startsWith('moods_'))) {
+      if (
+        e.key === 'lecturePulse_feedback' || 
+        (e.key && e.key.startsWith('moods_')) ||
+        (e.key && e.key.startsWith('exitTicketResponses_'))
+      ) {
         loadData();
       }
     };
@@ -135,13 +153,19 @@ useEffect(() => {
       loadData();
     };
 
+    const onExitTicketUpdated = () => {
+      loadData();
+    };
+
     window.addEventListener('storage', onStorage);
     window.addEventListener('feedback-updated', onFeedbackUpdated);
     window.addEventListener('mood-updated', onMoodUpdated);
+    window.addEventListener('exit-ticket-updated', onExitTicketUpdated);
     return () => {
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('feedback-updated', onFeedbackUpdated);
       window.removeEventListener('mood-updated', onMoodUpdated);
+      window.removeEventListener('exit-ticket-updated', onExitTicketUpdated);
     };
   }, [loadData]);
 
@@ -157,15 +181,7 @@ useEffect(() => {
   }
 
   const handleEndLecture = () => {
-    try {
-      updateLectureStatus(lecture.id, 'completed');
-      setLecture(prev => ({ ...prev, status: 'completed' }));
-      toast.success("Lecture ended successfully");
-      loadData();
-    } catch (error) {
-      console.error("Error ending lecture:", error);
-      toast.error("Failed to end lecture");
-    }
+    setIsExitTicketOpen(true);
   };
 
   const effectiveness = getOverallEffectiveness(analytics);
@@ -310,6 +326,11 @@ useEffect(() => {
             {/* Mood Summary */}
             <MoodSummaryCard moods={moods} />
 
+            {/* Exit Ticket Results */}
+            {exitTicket && (
+              <ExitTicketAnalytics exitTicket={exitTicket} responses={exitTicketResponses} />
+            )}
+
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <Card>
@@ -407,6 +428,13 @@ useEffect(() => {
           </div>
         )}
       </main>
+
+      <ExitTicketDialog
+        open={isExitTicketOpen}
+        onClose={() => setIsExitTicketOpen(false)}
+        lecture={lecture}
+        onUpdate={loadData}
+      />
     </div>
   );
 };

@@ -3,15 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Trash2, Check, QrCode, X, Download } from "lucide-react";
-import { deleteLecture, getFeedbackByLecture, updateLectureStatus } from "@/utils/storage";
+import { deleteLecture, getFeedbackByLecture } from "@/utils/storage";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
+import ExitTicketDialog from "@/components/ExitTicket/ExitTicketDialog";
 
 const LectureCard = ({ lecture, onUpdate }) => {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isExitTicketOpen, setIsExitTicketOpen] = useState(false);
   const feedbackCount = getFeedbackByLecture(lecture.id).length;
 
   const joinUrl = `${window.location.origin}/student?code=${lecture.code}`;
@@ -93,9 +95,7 @@ const LectureCard = ({ lecture, onUpdate }) => {
                 className="h-6 px-2 text-[10px] text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20 cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
-                  updateLectureStatus(lecture.id, 'completed');
-                  toast.success("Lecture ended");
-                  onUpdate();
+                  setIsExitTicketOpen(true);
                 }}
               >
                 End
@@ -268,6 +268,13 @@ const LectureCard = ({ lecture, onUpdate }) => {
             </div>
           </div>
         )}
+
+        <ExitTicketDialog
+          open={isExitTicketOpen}
+          onClose={() => setIsExitTicketOpen(false)}
+          lecture={lecture}
+          onUpdate={onUpdate}
+        />
       </CardContent>
     </Card>
   );
