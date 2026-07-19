@@ -72,3 +72,10 @@ export const sendLiveChat = (payload) => {
 export const endLive = (payload) => {
   emitWithConnection("end-live", [payload]);
 };
+
+export const emitReaction = (lectureId, reactionType) => {
+  if (socket.connected) {
+    socket.emit('submit-reaction', { lectureId, reactionType });
+  }
+};
+

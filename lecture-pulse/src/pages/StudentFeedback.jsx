@@ -36,6 +36,7 @@ import {
 import { emitFeedback } from "@/lib/socket";
 import JournalSection from "@/components/journal/JournalSection";
 import ResourceBoard from "@/components/ResourceBoard/ResourceBoard";
+import EmojiReactionBar from "@/components/EmojiReactionBar";
 
 const UnderstandingOption = ({ value, icon: Icon, label, color, understanding, setUnderstanding }) => (
   <motion.button
@@ -514,6 +515,7 @@ export default function Student() {
 
         {activeSession && step !== "code" && (
           <>
+            <EmojiReactionBar sessionCode={activeSession.code} lectureId={activeSession.id} />
             <ResourceBoard sessionCode={activeSession.code} isTeacher={false} />
             <JournalSection 
               key={activeSession.code}
@@ -521,11 +523,6 @@ export default function Student() {
               activeSession={activeSession} 
             />
           </>
-          <JournalSection 
-            key={activeSession.code}
-            sessionCode={activeSession.code} 
-            activeSession={activeSession} 
-          />
         )}
       </div>
     </div>

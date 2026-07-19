@@ -49,6 +49,15 @@ io.on('connection', (socket) => {
     socket.to(lectureId).emit('feedback-updated', feedback);
   });
 
+  // Handle new reaction submission
+  socket.on('submit-reaction', (data) => {
+    const { lectureId, reactionType } = data;
+    console.log(`Reaction received for lecture ${lectureId}: ${reactionType}`);
+    
+    // Broadcast to everyone in the lecture room EXCEPT the sender (the student)
+    socket.to(lectureId).emit('reaction-updated', { reactionType });
+  });
+
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });

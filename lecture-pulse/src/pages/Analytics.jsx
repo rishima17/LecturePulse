@@ -15,6 +15,7 @@ import LectureReplayTimeline from "@/components/charts/LectureReplayTimeline";
 import FeedbackTimeline from '@/components/charts/FeedbackTimeline';
 import AISummaryCard from '@/components/AISummaryCard';
 import ResourceBoard from '@/components/ResourceBoard/ResourceBoard';
+import TeacherReactionPanel from '@/components/TeacherReactionPanel';
 import AttendanceParticipationChart from '@/components/charts/AttendanceParticipationChart';
 import { generateLecturePDF } from "@/utils/pdfReport";
 import { generateLectureCSV } from "@/utils/csvReport";
@@ -176,6 +177,7 @@ useEffect(() => {
         socket.off('feedback-updated', handleRealtimeFeedback);
       };
     }
+  }, [sessionId, lecture, loadData]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, loadData]);
 
@@ -759,6 +761,7 @@ useEffect(() => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        <TeacherReactionPanel sessionCode={lecture.code} lectureId={lecture.id} />
         {analytics.totalResponses === 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             <div className="lg:col-span-2">
