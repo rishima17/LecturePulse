@@ -585,6 +585,7 @@ export default function Student() {
         </AnimatePresence>
 
         {activeSession && step !== "code" && step !== "mood-meter" && (
+        {activeSession && step !== "code" && (
           <>
             <EmojiReactionBar sessionCode={activeSession.code} lectureId={activeSession.id} />
             <ResourceBoard sessionCode={activeSession.code} isTeacher={false} />
