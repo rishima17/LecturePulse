@@ -35,6 +35,7 @@ import {
 } from "@/utils/storage";
 import { emitFeedback } from "@/lib/socket";
 import JournalSection from "@/components/journal/JournalSection";
+import ResourceBoard from "@/components/ResourceBoard/ResourceBoard";
 
 const UnderstandingOption = ({ value, icon: Icon, label, color, understanding, setUnderstanding }) => (
   <motion.button
@@ -512,6 +513,14 @@ export default function Student() {
         </AnimatePresence>
 
         {activeSession && step !== "code" && (
+          <>
+            <ResourceBoard sessionCode={activeSession.code} isTeacher={false} />
+            <JournalSection 
+              key={activeSession.code}
+              sessionCode={activeSession.code} 
+              activeSession={activeSession} 
+            />
+          </>
           <JournalSection 
             key={activeSession.code}
             sessionCode={activeSession.code} 

@@ -14,6 +14,7 @@ import ConfusionChart from '@/components/charts/ConfusionChart';
 import LectureReplayTimeline from "@/components/charts/LectureReplayTimeline";
 import FeedbackTimeline from '@/components/charts/FeedbackTimeline';
 import AISummaryCard from '@/components/AISummaryCard';
+import ResourceBoard from '@/components/ResourceBoard/ResourceBoard';
 import AttendanceParticipationChart from '@/components/charts/AttendanceParticipationChart';
 import { generateLecturePDF } from "@/utils/pdfReport";
 import { generateLectureCSV } from "@/utils/csvReport";
@@ -908,6 +909,8 @@ useEffect(() => {
               {renderNotesCard()}
               <AISummaryCard lecture={lecture} analytics={analytics} feedback={feedback} />
             </div>
+            <AISummaryCard lecture={lecture} analytics={analytics} feedback={feedback} />
+            <ResourceBoard sessionCode={lecture.code} isTeacher={true} />
           </div>
         )}
       </main>
