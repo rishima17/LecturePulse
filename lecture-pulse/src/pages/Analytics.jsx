@@ -6,6 +6,7 @@ import TopicCoverageHeatmap from '@/components/charts/TopicCoverageHeatmap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getLectureById, getFeedbackByLecture, getCurrentTeacher } from '@/utils/storage';
 import { calculateAnalytics, getOverallEffectiveness, getEffectivenessLabel } from '@/utils/analytics';
+import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw, StopCircle } from 'lucide-react';
 import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw, FileText, Eye, Edit, Plus, SlidersHorizontal } from 'lucide-react';
 import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw, FileText, Eye, Edit, Plus } from 'lucide-react';
 import UnderstandingChart from '@/components/charts/UnderstandingChart';
@@ -22,6 +23,11 @@ import { generateLectureCSV } from "@/utils/csvReport";
 import { useRef } from "react";
 import html2canvas from "html2canvas";
 import { socket, joinLectureRoom } from "@/lib/socket";
+import { getMoods } from "@/utils/moodStorage";
+import MoodSummaryCard from "@/components/MoodMeter/MoodSummaryCard";
+import ExitTicketDialog from "@/components/ExitTicket/ExitTicketDialog";
+import ExitTicketAnalytics from "@/components/ExitTicket/ExitTicketAnalytics";
+import { getExitTicket, getExitTicketResponses } from "@/utils/exitTicketStorage";
 import LectureNotesEditor from '@/components/LectureNotesEditor';
 import LectureNotesViewer from '@/components/LectureNotesViewer';
 import { AnimatePresence } from 'framer-motion';
@@ -51,6 +57,10 @@ const Analytics = () => {
   const navigate = useNavigate();
   const [lecture, setLecture] = useState(null);
   const [analytics, setAnalytics] = useState(null);
+  const [moods, setMoods] = useState(null);
+  const [exitTicket, setExitTicket] = useState(null);
+  const [exitTicketResponses, setExitTicketResponses] = useState([]);
+  const [isExitTicketOpen, setIsExitTicketOpen] = useState(false);
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [isViewingNotes, setIsViewingNotes] = useState(false);
   const understandingRef = useRef(null);
@@ -124,6 +134,14 @@ const participationRate = totalAttendance ? Math.round((totalFeedback / totalAtt
       return;
     }
     setLecture(foundLecture);
+    const moodsData = getMoods(foundLecture.code);
+    setMoods(moodsData);
+    
+    const ticket = getExitTicket(foundLecture.code);
+    setExitTicket(ticket);
+    const ticketResponses = getExitTicketResponses(foundLecture.code);
+    setExitTicketResponses(ticketResponses);
+    
     // Mock feedback data generation if empty, for demonstration purposes in dev
     let feedback = getFeedbackByLecture(sessionId);
     
@@ -150,7 +168,11 @@ useEffect(() => {
 
     // Listen for storage changes from other tabs
     const handleStorageChange = (e) => {
-      if (e.key === "lecturePulse_feedback") {
+      if (
+        e.key === "lecturePulse_feedback" || 
+        (e.key && e.key.startsWith("moods_")) ||
+        (e.key && e.key.startsWith("exitTicketResponses_"))
+      ) {
         loadData();
       }
     };
@@ -183,7 +205,11 @@ useEffect(() => {
 
   useEffect(() => {
     const onStorage = (e) => {
-      if (e.key === 'lecturePulse_feedback') {
+      if (
+        e.key === 'lecturePulse_feedback' || 
+        (e.key && e.key.startsWith('moods_')) ||
+        (e.key && e.key.startsWith('exitTicketResponses_'))
+      ) {
         loadData();
       }
     };
@@ -192,11 +218,23 @@ useEffect(() => {
       loadData();
     };
 
+    const onMoodUpdated = () => {
+      loadData();
+    };
+
+    const onExitTicketUpdated = () => {
+      loadData();
+    };
+
     window.addEventListener('storage', onStorage);
     window.addEventListener('feedback-updated', onFeedbackUpdated);
+    window.addEventListener('mood-updated', onMoodUpdated);
+    window.addEventListener('exit-ticket-updated', onExitTicketUpdated);
     return () => {
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('feedback-updated', onFeedbackUpdated);
+      window.removeEventListener('mood-updated', onMoodUpdated);
+      window.removeEventListener('exit-ticket-updated', onExitTicketUpdated);
     };
   }, [loadData]);
 
@@ -212,6 +250,10 @@ useEffect(() => {
       </div>
     );
   }
+
+  const handleEndLecture = () => {
+    setIsExitTicketOpen(true);
+  };
 
   const effectiveness = getOverallEffectiveness(analytics);
   const effectivenessInfo = getEffectivenessLabel(effectiveness);
@@ -741,6 +783,12 @@ useEffect(() => {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              {lecture.status === 'active' && (
+                <Button variant="destructive" size="sm" onClick={handleEndLecture}>
+                  <StopCircle className="w-4 h-4 mr-2" />
+                  End Lecture
+                </Button>
+              )}
               <Button variant="outline" size="sm" onClick={() => setIsCustomizerOpen(true)}>
                 <SlidersHorizontal className="w-4 h-4 mr-2" />
                 Customize
@@ -787,6 +835,40 @@ useEffect(() => {
     }
   };
 
+            {/* Mood Summary */}
+            <MoodSummaryCard moods={moods} />
+
+            {/* Exit Ticket Results */}
+            {exitTicket && (
+              <ExitTicketAnalytics exitTicket={exitTicket} responses={exitTicketResponses} />
+            )}
+
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Understanding Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div ref={understandingRef}>
+                    <UnderstandingChart data={analytics.understandingDistribution} />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Attention Levels</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div ref={attentionRef}>
+                    <AttentionChart data={analytics.attentionDistribution} />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Confusion Points</CardTitle>
+                </CardHeader>
   const visibleWidgets = preferences.widgetOrder.filter(id => !preferences.hiddenWidgets.includes(id));
 
   return (
@@ -918,6 +1000,12 @@ useEffect(() => {
         )}
       </main>
 
+      <ExitTicketDialog
+        open={isExitTicketOpen}
+        onClose={() => setIsExitTicketOpen(false)}
+        lecture={lecture}
+        onUpdate={loadData}
+      />
       <AnimatePresence>
         {isEditingNotes && (
           <LectureNotesEditor

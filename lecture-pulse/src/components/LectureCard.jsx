@@ -6,6 +6,7 @@ import { Trash2, Check, QrCode, X, Download, FileText, Eye, Edit, Plus } from "l
 import { deleteLecture, getFeedbackByLecture } from "@/utils/storage";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
+import ExitTicketDialog from "@/components/ExitTicket/ExitTicketDialog";
 import LectureNotesEditor from "@/components/LectureNotesEditor";
 import LectureNotesViewer from "@/components/LectureNotesViewer";
 import { AnimatePresence } from "framer-motion";
@@ -17,6 +18,7 @@ function LectureCard({ lecture, onUpdate }) {
   const [copied, setCopied] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isExitTicketOpen, setIsExitTicketOpen] = useState(false);
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [isViewingNotes, setIsViewingNotes] = useState(false);
   const feedbackCount = getFeedbackByLecture(lecture.id).length;
@@ -110,6 +112,28 @@ function LectureCard({ lecture, onUpdate }) {
             </h3>
             <p className="text-sm text-muted-foreground">{lecture.subject}</p>
           </div>
+          {lecture.isActive ? (
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 text-xs font-semibold rounded-full">
+                Active
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 px-2 text-[10px] text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsExitTicketOpen(true);
+                }}
+              >
+                End
+              </Button>
+            </div>
+          ) : (
+            <span className="px-3 py-1 bg-muted text-muted-foreground text-xs font-semibold rounded-full">
+              Completed
+            </span>
+          )}
           <div className="flex items-center gap-2 shrink-0">
             <BookmarkButton
               lectureId={lecture.id}
@@ -363,6 +387,13 @@ function LectureCard({ lecture, onUpdate }) {
             </div>
           </div>
         )}
+
+        <ExitTicketDialog
+          open={isExitTicketOpen}
+          onClose={() => setIsExitTicketOpen(false)}
+          lecture={lecture}
+          onUpdate={onUpdate}
+        />
       </CardContent>
 
       <AnimatePresence>
