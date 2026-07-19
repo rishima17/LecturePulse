@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { SmartEngagementScore } from '@/components/charts/SmartEngagementScore';
 import TopicCoverageHeatmap from '@/components/charts/TopicCoverageHeatmap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getLectureById, getFeedbackByLecture, getCurrentTeacher } from '@/utils/storage';
+import { getLectureById, getFeedbackByLecture, getCurrentTeacher, updateLectureStatus } from '@/utils/storage';
 import { calculateAnalytics, getOverallEffectiveness, getEffectivenessLabel } from '@/utils/analytics';
 import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw, StopCircle } from 'lucide-react';
 import { ArrowLeft, Users, TrendingUp, AlertCircle, Lightbulb, RefreshCw, FileText, Eye, Edit, Plus, SlidersHorizontal } from 'lucide-react';
@@ -23,6 +23,9 @@ import { generateLectureCSV } from "@/utils/csvReport";
 import { useRef } from "react";
 import html2canvas from "html2canvas";
 import { socket, joinLectureRoom } from "@/lib/socket";
+import { toast } from "sonner";
+import { getMoods } from "@/utils/moodStorage";
+import MoodSummaryCard from "@/components/MoodMeter/MoodSummaryCard";
 import { getMoods } from "@/utils/moodStorage";
 import MoodSummaryCard from "@/components/MoodMeter/MoodSummaryCard";
 import ExitTicketDialog from "@/components/ExitTicket/ExitTicketDialog";
@@ -168,6 +171,7 @@ useEffect(() => {
 
     // Listen for storage changes from other tabs
     const handleStorageChange = (e) => {
+      if (e.key === "lecturePulse_feedback" || (e.key && e.key.startsWith("moods_"))) {
       if (
         e.key === "lecturePulse_feedback" || 
         (e.key && e.key.startsWith("moods_")) ||
@@ -205,6 +209,7 @@ useEffect(() => {
 
   useEffect(() => {
     const onStorage = (e) => {
+      if (e.key === 'lecturePulse_feedback' || (e.key && e.key.startsWith('moods_'))) {
       if (
         e.key === 'lecturePulse_feedback' || 
         (e.key && e.key.startsWith('moods_')) ||
@@ -222,6 +227,9 @@ useEffect(() => {
       loadData();
     };
 
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('feedback-updated', onFeedbackUpdated);
+    window.addEventListener('mood-updated', onMoodUpdated);
     const onExitTicketUpdated = () => {
       loadData();
     };
@@ -252,6 +260,15 @@ useEffect(() => {
   }
 
   const handleEndLecture = () => {
+    try {
+      updateLectureStatus(lecture.id, 'completed');
+      setLecture(prev => ({ ...prev, status: 'completed' }));
+      toast.success("Lecture ended successfully");
+      loadData();
+    } catch (error) {
+      console.error("Error ending lecture:", error);
+      toast.error("Failed to end lecture");
+    }
     setIsExitTicketOpen(true);
   };
 

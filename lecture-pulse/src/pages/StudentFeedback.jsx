@@ -92,6 +92,7 @@ export default function Student() {
         const latestLecture = getLectureById(activeSession.id);
         if (latestLecture) {
           if (latestLecture.status === "completed") {
+            setStep("mood-meter");
             const ticket = getExitTicket(latestLecture.code);
             const hasSubmitted = hasStudentSubmittedExitTicket(latestLecture.code);
             if (ticket && !hasSubmitted) {
@@ -148,6 +149,7 @@ export default function Student() {
         if (session.status === "active") {
           setStep("feedback");
         } else if (session.status === "completed") {
+          setStep("mood-meter");
           const ticket = getExitTicket(session.code);
           const hasSubmitted = hasStudentSubmittedExitTicket(session.code);
           if (ticket && !hasSubmitted) {
@@ -620,6 +622,7 @@ export default function Student() {
           )}
         </AnimatePresence>
 
+        {activeSession && step !== "code" && step !== "mood-meter" && (
         {activeSession && step !== "code" && step !== "mood-meter" && step !== "exit-ticket" && (
           <>
             <EmojiReactionBar sessionCode={activeSession.code} lectureId={activeSession.id} />

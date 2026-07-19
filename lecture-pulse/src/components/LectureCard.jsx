@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Trash2, Check, QrCode, X, Download } from "lucide-react";
+import { deleteLecture, getFeedbackByLecture, updateLectureStatus } from "@/utils/storage";
 import { Trash2, Check, QrCode, X, Download, FileText, Eye, Edit, Plus } from "lucide-react";
 import { deleteLecture, getFeedbackByLecture } from "@/utils/storage";
 import { toast } from "sonner";
@@ -123,6 +125,9 @@ function LectureCard({ lecture, onUpdate }) {
                 className="h-6 px-2 text-[10px] text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20 cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
+                  updateLectureStatus(lecture.id, 'completed');
+                  toast.success("Lecture ended");
+                  onUpdate();
                   setIsExitTicketOpen(true);
                 }}
               >
