@@ -623,6 +623,8 @@ export default function Student() {
         {activeSession && step !== "code" && step !== "mood-meter" && step !== "exit-ticket" && (
           <>
             <EmojiReactionBar sessionCode={activeSession.code} lectureId={activeSession.id} />
+        {activeSession && step !== "code" && (
+          <>
             <ResourceBoard sessionCode={activeSession.code} isTeacher={false} />
             <JournalSection 
               key={activeSession.code}
@@ -630,6 +632,11 @@ export default function Student() {
               activeSession={activeSession} 
             />
           </>
+          <JournalSection 
+            key={activeSession.code}
+            sessionCode={activeSession.code} 
+            activeSession={activeSession} 
+          />
         )}
       </div>
     </div>
