@@ -26,6 +26,11 @@ import { socket, joinLectureRoom } from "@/lib/socket";
 import { toast } from "sonner";
 import { getMoods } from "@/utils/moodStorage";
 import MoodSummaryCard from "@/components/MoodMeter/MoodSummaryCard";
+import { getMoods } from "@/utils/moodStorage";
+import MoodSummaryCard from "@/components/MoodMeter/MoodSummaryCard";
+import ExitTicketDialog from "@/components/ExitTicket/ExitTicketDialog";
+import ExitTicketAnalytics from "@/components/ExitTicket/ExitTicketAnalytics";
+import { getExitTicket, getExitTicketResponses } from "@/utils/exitTicketStorage";
 import LectureNotesEditor from '@/components/LectureNotesEditor';
 import LectureNotesViewer from '@/components/LectureNotesViewer';
 import { AnimatePresence } from 'framer-motion';
@@ -56,6 +61,9 @@ const Analytics = () => {
   const [lecture, setLecture] = useState(null);
   const [analytics, setAnalytics] = useState(null);
   const [moods, setMoods] = useState(null);
+  const [exitTicket, setExitTicket] = useState(null);
+  const [exitTicketResponses, setExitTicketResponses] = useState([]);
+  const [isExitTicketOpen, setIsExitTicketOpen] = useState(false);
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [isViewingNotes, setIsViewingNotes] = useState(false);
   const understandingRef = useRef(null);
@@ -132,6 +140,11 @@ const participationRate = totalAttendance ? Math.round((totalFeedback / totalAtt
     const moodsData = getMoods(foundLecture.code);
     setMoods(moodsData);
     
+    const ticket = getExitTicket(foundLecture.code);
+    setExitTicket(ticket);
+    const ticketResponses = getExitTicketResponses(foundLecture.code);
+    setExitTicketResponses(ticketResponses);
+    
     // Mock feedback data generation if empty, for demonstration purposes in dev
     let feedback = getFeedbackByLecture(sessionId);
     
@@ -159,6 +172,11 @@ useEffect(() => {
     // Listen for storage changes from other tabs
     const handleStorageChange = (e) => {
       if (e.key === "lecturePulse_feedback" || (e.key && e.key.startsWith("moods_"))) {
+      if (
+        e.key === "lecturePulse_feedback" || 
+        (e.key && e.key.startsWith("moods_")) ||
+        (e.key && e.key.startsWith("exitTicketResponses_"))
+      ) {
         loadData();
       }
     };
@@ -192,6 +210,11 @@ useEffect(() => {
   useEffect(() => {
     const onStorage = (e) => {
       if (e.key === 'lecturePulse_feedback' || (e.key && e.key.startsWith('moods_'))) {
+      if (
+        e.key === 'lecturePulse_feedback' || 
+        (e.key && e.key.startsWith('moods_')) ||
+        (e.key && e.key.startsWith('exitTicketResponses_'))
+      ) {
         loadData();
       }
     };
@@ -207,10 +230,19 @@ useEffect(() => {
     window.addEventListener('storage', onStorage);
     window.addEventListener('feedback-updated', onFeedbackUpdated);
     window.addEventListener('mood-updated', onMoodUpdated);
+    const onExitTicketUpdated = () => {
+      loadData();
+    };
+
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('feedback-updated', onFeedbackUpdated);
+    window.addEventListener('mood-updated', onMoodUpdated);
+    window.addEventListener('exit-ticket-updated', onExitTicketUpdated);
     return () => {
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('feedback-updated', onFeedbackUpdated);
       window.removeEventListener('mood-updated', onMoodUpdated);
+      window.removeEventListener('exit-ticket-updated', onExitTicketUpdated);
     };
   }, [loadData]);
 
@@ -237,6 +269,7 @@ useEffect(() => {
       console.error("Error ending lecture:", error);
       toast.error("Failed to end lecture");
     }
+    setIsExitTicketOpen(true);
   };
 
   const effectiveness = getOverallEffectiveness(analytics);
@@ -822,6 +855,11 @@ useEffect(() => {
             {/* Mood Summary */}
             <MoodSummaryCard moods={moods} />
 
+            {/* Exit Ticket Results */}
+            {exitTicket && (
+              <ExitTicketAnalytics exitTicket={exitTicket} responses={exitTicketResponses} />
+            )}
+
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <Card>
@@ -979,6 +1017,12 @@ useEffect(() => {
         )}
       </main>
 
+      <ExitTicketDialog
+        open={isExitTicketOpen}
+        onClose={() => setIsExitTicketOpen(false)}
+        lecture={lecture}
+        onUpdate={loadData}
+      />
       <AnimatePresence>
         {isEditingNotes && (
           <LectureNotesEditor

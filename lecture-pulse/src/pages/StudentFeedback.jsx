@@ -43,6 +43,8 @@ import JournalSection from "@/components/journal/JournalSection";
 import ResourceBoard from "@/components/ResourceBoard/ResourceBoard";
 import EmojiReactionBar from "@/components/EmojiReactionBar";
 import MoodMeter from "@/components/MoodMeter/MoodMeter";
+import ExitTicketForm from "@/components/ExitTicket/ExitTicketForm";
+import { getExitTicket, hasStudentSubmittedExitTicket } from "@/utils/exitTicketStorage";
 
 const UnderstandingOption = ({ value, icon: Icon, label, color, understanding, setUnderstanding }) => (
   <motion.button
@@ -91,6 +93,13 @@ export default function Student() {
         if (latestLecture) {
           if (latestLecture.status === "completed") {
             setStep("mood-meter");
+            const ticket = getExitTicket(latestLecture.code);
+            const hasSubmitted = hasStudentSubmittedExitTicket(latestLecture.code);
+            if (ticket && !hasSubmitted) {
+              setStep("exit-ticket");
+            } else {
+              setStep("mood-meter");
+            }
           }
         }
       } catch (err) {
@@ -141,6 +150,13 @@ export default function Student() {
           setStep("feedback");
         } else if (session.status === "completed") {
           setStep("mood-meter");
+          const ticket = getExitTicket(session.code);
+          const hasSubmitted = hasStudentSubmittedExitTicket(session.code);
+          if (ticket && !hasSubmitted) {
+            setStep("exit-ticket");
+          } else {
+            setStep("mood-meter");
+          }
         } else {
           toast.error("This session is not available.");
         }
@@ -561,6 +577,28 @@ export default function Student() {
             </motion.div>
           )}
 
+          {step === "exit-ticket" && activeSession && (
+            <motion.div
+              key="exit-ticket"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              className="w-full flex justify-center"
+            >
+              {getExitTicket(activeSession.code) ? (
+                <ExitTicketForm
+                  exitTicket={getExitTicket(activeSession.code)}
+                  sessionCode={activeSession.code}
+                  onComplete={() => setStep("mood-meter")}
+                />
+              ) : (
+                <div className="text-center py-6">
+                  <p className="text-muted-foreground text-sm">Loading exit ticket...</p>
+                </div>
+              )}
+            </motion.div>
+          )}
+
           {step === "mood-meter" && (
             <motion.div
               key="mood-meter"
@@ -585,6 +623,9 @@ export default function Student() {
         </AnimatePresence>
 
         {activeSession && step !== "code" && step !== "mood-meter" && (
+        {activeSession && step !== "code" && step !== "mood-meter" && step !== "exit-ticket" && (
+          <>
+            <EmojiReactionBar sessionCode={activeSession.code} lectureId={activeSession.id} />
         {activeSession && step !== "code" && (
           <>
             <EmojiReactionBar sessionCode={activeSession.code} lectureId={activeSession.id} />
